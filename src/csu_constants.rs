@@ -129,6 +129,9 @@ pub const CSU_CTRL_CSU_CLK_SEL_OFF           : u32 = 0;
 pub const CSU_AES_RESET_RESET_MASK           : u32 = 0x00000001;
 pub const CSU_AES_RESET_RESET_OFF            : u32 = 0;
 
+pub const CSU_SHA_RESET_RESET_MASK           : u32 = 0x00000001;
+pub const CSU_SHA_RESET_RESET_OFF            : u32 = 0;
+
 // CSU Functions
 
 #[inline(always)]
@@ -143,5 +146,12 @@ pub unsafe fn csu_reg_write(reg: u32, val: u32) {
 pub fn csu_aes_engine_reset() {
     unsafe {
         csu_reg_write(CSU_AES_RESET_REG_OFFSET,CSU_AES_RESET_RESET_MASK);
+    }
+}
+
+#[inline(always)]
+pub fn csu_sha_engine_reset() {
+    unsafe {
+        csu_reg_write(CSU_SHA_RESET_REG_OFFSET,CSU_SHA_RESET_RESET_MASK);
     }
 }
