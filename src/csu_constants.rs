@@ -1,5 +1,5 @@
 //CSU Config Register Baseaddress
-const CSU_CONF_REG_BASEADDRESS           : u32 = 0xFFCA0000;
+const CSU_CONF_REG_BASEADDRESS               : u32 = 0xFFCA0000;
 
 // CSU Register Offsets
 pub const CSU_STATUS_REG_OFFSET              : u32 = 0x00000000;
@@ -125,6 +125,24 @@ pub const CSU_CTRL_SLVERR_ENABLE_MASK        : u32 = 0x00000010;
 pub const CSU_CTRL_SLVERR_ENABLE_OFF         : u32 = 4;
 pub const CSU_CTRL_CSU_CLK_SEL_MASK          : u32 = 0x00000001;
 pub const CSU_CTRL_CSU_CLK_SEL_OFF           : u32 = 0;
+
+pub const CSU_SSS_CFG_SHA_SSS_MASK           : u32 = 0x0000F000;
+pub const CSU_SSS_CFG_SHA_SSS_OFF            : u32 = 12;
+pub const CSU_SSS_CFG_AES_SSS_MASK           : u32 = 0x00000F00;
+pub const CSU_SSS_CFG_AES_SSS_OFF            : u32 = 8;
+pub const CSU_SSS_CFG_DMA_SSS_MASK           : u32 = 0x000000F0;
+pub const CSU_SSS_CFG_DMA_SSS_OFF            : u32 = 4;
+pub const CSU_SSS_CFG_PCAP_SSS_MASK          : u32 = 0x0000000F;
+pub const CSU_SSS_CFG_PCAP_SSS_OFF           : u32 = 0;
+
+pub const CSU_DMA_RESET_RESET_MASK           : u32 = 0x00000001;
+pub const CSU_DMA_RESET_RESET_OFF            : u32 = 0;
+
+pub const CSU_MULTIBOOT_SSSS_ADDR_MASK       : u32 = 0xFFFFFFFF;
+pub const CSU_MULTIBOOT_SSSS_ADDR_OFF        : u32 = 0;
+
+pub const CSU_TAMPER_TRIG_TRIGGER_MASK       : u32 = 0x00000001;
+pub const CSU_TAMPER_TRIG_TRIGGER_OFF        : u32 = 0;
 
 pub const CSU_AES_RESET_RESET_MASK           : u32 = 0x00000001;
 pub const CSU_AES_RESET_RESET_OFF            : u32 = 0;
