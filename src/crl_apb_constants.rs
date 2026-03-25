@@ -2,15 +2,100 @@
 // XX XX LPD   XX XX XX
 // Low Power Domain (LPD) clock and reset control
 
+// All Values below are from UG 1087 (https://docs.amd.com/r/en-US/ug1087-zynq-ultrascale-registers)
+
 // CRL APB Config Register Baseaddress
-const CRL_APB_REG_BASEADDRESS                : u32 = 0xFF5E0000;
+const CRL_APB_REG_BASEADDRESS                   : u32 = 0xFF5E0000;
 
 // CRL APB Register Offsets
-pub const CRL_APB_ERR_CTRL_REG_OFFSET        : u32 = 0x00000000;
-pub const CRL_APB_IR_STATUS_REG_OFFSET       : u32 = 0x00000004;
-pub const CRL_APB_IR_MASK_REG_OFFSET         : u32 = 0x00000008;
-pub const CRL_APB_IR_ENABLE_REG_OFFSET       : u32 = 0x0000000C;
-pub const CRL_APB_IR_DISABLE_REG_OFFSET      : u32 = 0x00000010;
+pub const CRL_APB_ERR_CTRL_REG_OFFSET           : u32 = 0x00000000;
+pub const CRL_APB_IR_STATUS_REG_OFFSET          : u32 = 0x00000004;
+pub const CRL_APB_IR_MASK_REG_OFFSET            : u32 = 0x00000008;
+pub const CRL_APB_IR_ENABLE_REG_OFFSET          : u32 = 0x0000000C;
+pub const CRL_APB_IR_DISABLE_REG_OFFSET         : u32 = 0x00000010;
 
-pub const CRL_APB_CRL_WRPROT_REG_OFFSET      : u32 = 0x0000001C;
-pub const CRL_APB_IOPLL_CTRL_REG_OFFSET      : u32 = 0x00000020;
+pub const CRL_APB_CRL_WRPROT_REG_OFFSET         : u32 = 0x0000001C;
+pub const CRL_APB_IOPLL_CTRL_REG_OFFSET         : u32 = 0x00000020;
+pub const CRL_APB_IOPLL_CFG_REG_OFFSET          : u32 = 0x00000024;
+pub const CRL_APB_IOPLL_FRAC_CFG_REG_OFFSET     : u32 = 0x00000028;
+
+pub const CRL_APB_RPLL_CTRL_REG_OFFSET          : u32 = 0x00000030;
+pub const CRL_APB_RPLL_CFG_REG_OFFSET           : u32 = 0x00000034;
+pub const CRL_APB_RPLL_FRAC_CFG_REG_OFFSET      : u32 = 0x00000038;
+
+pub const CRL_APB_PLL_STATUS_REG_OFFSET         : u32 = 0x00000040;
+pub const CRL_APB_IOPLL_TO_FPD_CTRL_REG_OFFSET  : u32 = 0x00000044;
+pub const CRL_APB_RPLL_TO_FPD_CTRL_REG_OFFSET   : u32 = 0x00000048;
+pub const CRL_APB_USB3_DUAL_REF_CTRL_REG_OFFSET : u32 = 0x0000004C;
+pub const CRL_APB_GEM0_CTRL_REG_OFFSET          : u32 = 0x00000050;
+pub const CRL_APB_GEM1_CTRL_REG_OFFSET          : u32 = 0x00000054;
+pub const CRL_APB_GEM2_CTRL_REG_OFFSET          : u32 = 0x00000058;
+pub const CRL_APB_GEM3_CTRL_REG_OFFSET          : u32 = 0x0000005C;
+pub const CRL_APB_USB0_BUS_REF_CTRL_REG_OFFSET  : u32 = 0x00000060;
+pub const CRL_APB_USB1_BUS_REF_CTRL_REG_OFFSET  : u32 = 0x00000064;
+pub const CRL_APB_QSPI_REF_CTRL_REG_OFFSET      : u32 = 0x00000068;
+pub const CRL_APB_SDIO0_REF_CTRL_REG_OFFSET     : u32 = 0x0000006C;
+pub const CRL_APB_SDIO1_REF_CTRL_REG_OFFSET     : u32 = 0x00000070;
+pub const CRL_APB_UART0_REF_CTRL_REG_OFFSET     : u32 = 0x00000074;
+pub const CRL_APB_UART1_REF_CTRL_REG_OFFSET     : u32 = 0x00000078;
+pub const CRL_APB_SPI0_REF_CTRL_REG_OFFSET      : u32 = 0x0000007C;
+pub const CRL_APB_SPI1_REF_CTRL_REG_OFFSET      : u32 = 0x00000080;
+pub const CRL_APB_CAN0_REF_CTRL_REG_OFFSET      : u32 = 0x00000084;
+pub const CRL_APB_CAN1_REF_CTRL_REG_OFFSET      : u32 = 0x00000088;
+
+pub const CRL_APB_CPU_R5_CTRL_REG_OFFSET        : u32 = 0x00000090;
+
+pub const CRL_APB_IOU_SWITCH_CTRL_REG_OFFSET    : u32 = 0x0000009C;
+
+pub const CRL_APB_CSU_PLL_CTRL_REG_OFFSET       : u32 = 0x000000A0;
+pub const CRL_APB_PCAP_CTRL_REG_OFFSET          : u32 = 0x000000A4;
+pub const CRL_APB_LPD_SWITCH_CTRL_REG_OFFSET    : u32 = 0x000000A8;
+pub const CRL_APB_LPD_LSBUS_CTRL_REG_OFFSET     : u32 = 0x000000AC;
+pub const CRL_APB_DBG_LPD_CTRL_REG_OFFSET       : u32 = 0x000000B0;
+pub const CRL_APB_NAND_REF_CTRL_REG_OFFSET      : u32 = 0x000000B4;
+pub const CRL_APB_LPD_DMA_REF_CTRL_REG_OFFSET   : u32 = 0x000000B8;
+
+pub const CRL_APB_PL0_REF_CTRL_REG_OFFSET       : u32 = 0x000000C0;
+pub const CRL_APB_PL1_REF_CTRL_REG_OFFSET       : u32 = 0x000000C4;
+pub const CRL_APB_PL2_REF_CTRL_REG_OFFSET       : u32 = 0x000000C8;
+pub const CRL_APB_PL3_REF_CTRL_REG_OFFSET       : u32 = 0x000000CC;
+pub const CRL_APB_PL0_THR_CTRL_REG_OFFSET       : u32 = 0x000000D0;
+pub const CRL_APB_PL0_THR_CNT_REG_OFFSET        : u32 = 0x000000D4;
+pub const CRL_APB_PL1_THR_CTRL_REG_OFFSET       : u32 = 0x000000D8;
+pub const CRL_APB_PL1_THR_CNT_REG_OFFSET        : u32 = 0x000000DC;
+pub const CRL_APB_PL2_THR_CTRL_REG_OFFSET       : u32 = 0x000000E0;
+pub const CRL_APB_PL2_THR_CNT_REG_OFFSET        : u32 = 0x000000E4;
+pub const CRL_APB_PL3_THR_CTRL_REG_OFFSET       : u32 = 0x000000E8;
+pub const CRL_APB_PL3_THR_CNT_REG_OFFSET        : u32 = 0x000000FC; // ??? Is this correct, the documentation says this, but it doesn't look right??
+
+pub const CRL_APB_GEM_TSU_REF_CTRL_REG_OFFSET   : u32 = 0x00000100;
+pub const CRL_APB_DLL_REF_CTRL_REG_OFFSET       : u32 = 0x00000104;
+pub const CRL_APB_PSSYSMON_REF_CTRL_REG_OFFSET  : u32 = 0x00000108;
+
+pub const CRL_APB_I2C0_REF_CTRL_REG_OFFSET      : u32 = 0x00000120;
+pub const CRL_APB_I2C1_REF_CTRL_REG_OFFSET      : u32 = 0x00000124;
+
+#[inline(always)]
+pub unsafe fn crl_apb_reg_write(reg: u32, val: u32) {
+    let crl_apb_reg : *mut u32 = (reg + CRL_APB_REG_BASEADDRESS) as *mut u32;
+    unsafe {
+        crl_apb_reg.write_volatile(val);
+    }
+}
+
+#[inline(always)]
+pub unsafe fn crl_apb_reg_read(reg: u32) -> u32 {
+    let crl_apb_reg : *mut u32 = (reg + CRL_APB_REG_BASEADDRESS) as *mut u32;
+    unsafe {
+        return crl_apb_reg.read_volatile();
+    }
+}
+
+#[inline(always)]
+pub fn crl_apb_get_reset_reason() -> u32 {
+    let reset_reason : u32;
+    unsafe {
+        reset_reason = crl_apb_reg_read(CRL_APB_RESET_REASON_REG_OFFSET);
+    }
+    return reset_reason;
+}
