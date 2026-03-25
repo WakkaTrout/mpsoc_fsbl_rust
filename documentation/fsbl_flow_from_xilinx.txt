@@ -5,7 +5,7 @@ Xilinx Stage 1:
 2. Put SHA engine into Reset
 3. If TPM supported
     3.1 Reset and Initialize CSU DMA
-    3.2 CSU SSS CFG DMA?
+    3.2 Switch the DMA to DMA into the SHA Engine (CSU_SSS_CFG register)
     3.3 Pull SHA engine out of reset and start it up
     3.4 DMA FSBL code and required SHA padding into CSU
     3.5 Hash FSBL for measured boot (wait for SHA engine calculation to complete and read the SHA Digest Registers)
