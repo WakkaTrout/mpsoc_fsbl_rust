@@ -75,4 +75,29 @@ Xilinx Stage 1:
 On Error in above -> ErrorLockdown
 
 Xilinx Stage 2:
+1. Initialize the Primary Boot Device when not in JTAG
+    1.1 Read Boot Mode Register as that will signify what the primary boot device is
+    1.2 If the boot device requires it, initialize the CSU DMA (didn't we already do this if we support TPMs... bruh)
+    1.3 HUGE switch statement for all the supported boot modes to boot from (skip if boot from a boot device not supported)
+    1.4 With boot mode identified, initialize boot device (boot mode specific)
+2. Validate header when not in JTAG (this seems really wrong if the FSBL is validating itself. If the FSBL image is validating a second FSBL image (and this one was already validated by the ROM), then this is probably okay)
+    2.1 Read multiboot register
+    2.2 Get the offset to where the fsbl image is in the primary boot device
+    2.3 Read the boot header out of the Memory
+    2.4 Setup the Crypto (IV, signal to PMU if FSBL is encrypted or enc only efuse is burned)
+    2.5 Read eFuse and check for boot header authentication (error if RSA eFuse bit is set as this is not allowed... what does this mean... this seems janky)
+    2.6 If RSA fuse set or boot header authentication set and secure boot is supported
+        2.6.1 TBD
+    2.7 If not doing authentication, read the image header and verify it some more
+        2.7.1 TBD
+3. Initialize Secondary Boot Device as a potential fallback if the image header signals another device when not in JTAG
+    3.1 Big switch statement to get necessary initialization function
+    3.2 With boot device identified, initialize the boot device
+    3.3 Validate header (again.... is this for a third image??????)
+4. If we are in JTAG mode, mark the RPU cores available for JTAG boot and skip to stage 4
+5. Clear RPU status register
+
+On Error in above -> ErrorLockdown
+
+Xilinx Stage 3:
 1.
