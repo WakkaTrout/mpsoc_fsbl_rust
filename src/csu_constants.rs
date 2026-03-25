@@ -1,3 +1,5 @@
+// Cryptographic Security Unit (CSU) Configuration Registers
+
 //CSU Config Register Baseaddress
 const CSU_CONF_REG_BASEADDRESS               : u32 = 0xFFCA0000;
 
