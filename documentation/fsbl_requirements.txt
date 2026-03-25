@@ -1,4 +1,6 @@
-1. The FSBL SHALL reset the CSU AES engine on all resets.
-2. The FSBL SHALL reset the CSU SHA engine on all resets.
+1. The FSBL SHALL reset the CSU AES engine on all resets if the system requires Hardware AES support.
+2. The FSBL SHALL reset the CSU SHA engine on all resets if the system requires Hardware SHA support.
 3. The FSBL SHALL validate the consistency of the boot reason with the detected system state.
-4.
+4. The FSBL MAY support changing to a different boot image if it detects the current boot image is corrupted.
+    4 Additional Information. The intended way to accomplish this is to program the next boot image address into the multiboot header and then trigger a soft reset
+5.
