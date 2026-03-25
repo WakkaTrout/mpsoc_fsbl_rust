@@ -1,1 +1,10 @@
+[build]
+target = "aarch64-unknown-none"
 
+[target.aarch64-unknown-none]
+rustflags = [
+    "-C", "link-arg=-Tfsbl_linker.ld",
+    "-C", "target-cpu=cortex-a53",
+    "-C", "target-feature=+neon",
+    "-C", "link-arg=--gc-sections"
+]
