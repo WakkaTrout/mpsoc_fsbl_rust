@@ -3,4 +3,5 @@
 3. The FSBL SHALL validate the consistency of the boot reason with the detected system state.
 4. The FSBL MAY support changing to a different boot image if it detects the current boot image is corrupted.
     4 Additional Information. The intended way to accomplish this is to program the next boot image address into the multiboot header and then trigger a soft reset
-5.
+5. The FSBL SHALL clear the psonly_reset_req bit from the CRL_APB Reset Reason Register if a PS-only reboot occurred (reference https://docs.amd.com/r/en-US/ug1087-zynq-ultrascale-registers/RESET_REASON-CRL_APB-Register)
+6.
