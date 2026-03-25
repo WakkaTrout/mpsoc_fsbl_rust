@@ -1,3 +1,5 @@
+From UG1137 Phases of FSBL Operation (https://docs.amd.com/r/en-US/ug1137-zynq-ultrascale-mpsoc-swdev/Phases-of-FSBL-Operation)
+
 Xilinx Stage 1:
 1. Reset AES engine
 2. Reset SHA engine
