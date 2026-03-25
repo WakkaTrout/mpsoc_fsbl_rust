@@ -19,6 +19,7 @@ global_asm!(
 pub extern "C" fn main() -> ! {
     // Your bootloader logic here!
     csu_aes_engine_reset();
+    csu_sha_engine_reset();
     loop {}
 }
 
