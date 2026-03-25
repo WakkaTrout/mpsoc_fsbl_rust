@@ -1,0 +1,4 @@
+1. The FSBL SHALL reset the CSU AES engine on all resets.
+2. The FSBL SHALL reset the CSU SHA engine on all resets.
+3. The FSBL SHALL validate the consistency of the boot reason with the detected system state.
+4.
