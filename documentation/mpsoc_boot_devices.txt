@@ -1,0 +1,27 @@
+Possible Primary boot devices for the MPSoC for the next stage of software (after the FSBL):
+
+1. QSPI 32 bit
+2. USB 2.0?
+3. USB 3.0?
+4. DDR 3/LP3?/4/LP4 (for warm boot)?
+5. Raw NAND?
+6. eMMC/SD card? The FSBL seems to support two different SD card slots (SD0 and SD1) and an SD Card with Level Shifter mode too (what is this?)
+7. JTAG (with possibility to disable it by eFuses)
+8. QSPI 24 (what is this? Xilinx FSBL support this)
+
+For backup/secondary boot devices (it may or may not be the same as the primary device (the primary device may hold a single image or may hold multiple)):
+1. IHT_PPD_SAME? Is that just a way to say the same device will be used?
+2. USB (with and without DDR support?)
+3. QSPI24 (again, what is it?)
+4. QSPI32
+5. NAND
+6. SD0
+7. SD1
+8. SD last
+
+Xilinx skips secondary image if primary is jtag (which makes sense as you would typically debug with jtag, so you wouldn't want to try to boot anothe image during jtag boot)
+
+Questions:
+    1. Why can't we support more than two SD cards? hardware limitation?
+    2. What truly is the primary boot device? (I believe the definition depends on the reset mode). Doesn't the CSU typically initialize the first boot device in order to even get the first FSBL image? Is there duplicate initialization going on here for the first image? Is the primary boot device supposed to be the device the FSBL booted out of and now it will try to get the next stage out of it?
+    3. Why can't we support more than two boot devices? Is there even a need to support more than two (i.e. does it even make sense for the FSBL software to support more than two devices at a time before it tries a different image?)? At this point, isn't the boot devices purely for next stage software and backup FSBL's?
