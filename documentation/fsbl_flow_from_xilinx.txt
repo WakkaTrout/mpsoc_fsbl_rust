@@ -1,20 +1,26 @@
 From UG1137 Phases of FSBL Operation (https://docs.amd.com/r/en-US/ug1137-zynq-ultrascale-mpsoc-swdev/Phases-of-FSBL-Operation)
 
 Xilinx Stage 1:
-1. Reset AES engine
-2. Reset SHA engine
+1. Put AES engine into Reset
+2. Put SHA engine into Reset
 3. If TPM supported
-    3.5 Hash FSBL for measured boot
+    3.1 Reset and Initialize CSU DMA
+    3.2 CSU SSS CFG DMA?
+    3.3 Pull SHA engine out of reset and start it up
+    3.4 DMA FSBL code and required SHA padding into CSU
+    3.5 Hash FSBL for measured boot (wait for SHA engine calculation to complete and read the SHA Digest Registers)
         NOTE: This seems very wrong and insecure. The FSBL should not be hashing itself, the CSU ROM should hash the FSBL
             This would imply that the CSU needs to initialize the TPM so it can place the FSBL hashes into it.
-4. If PS only Reset, re-enable PL programming
-5. If not an APU only reset, System Init?
-6. Validate Boot reason ?
-7. if wdt support and not jtag bootmode and not apu only reset, init wdt
-8. reset AES and SHA engines
+4. Save data section to duplicate data section on PS only and system resets in case of warm reset
+    4.5 In case of warm reset, restore the data section (this seems weird, at which points during execution can a warm reset occur?)
+5. If PS only Reset, re-enable PL programming
+6. If not an APU only reset, System Init?
+7. Validate Boot reason ?
+8. if wdt support and not jtag bootmode and not apu only reset, init wdt
+9. Put AES and SHA engines into reset
     Question: Why a second time???
-9. Processor Init
-10. If APU only reboot, clear any pending interrupts
+10. Processor Init
+11. If APU only reboot, clear any pending interrupts
 
 
 
