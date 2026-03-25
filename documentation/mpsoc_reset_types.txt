@@ -1,28 +1,28 @@
-1. Software Debugger Reset. Debugger wrote to BLOCKONLY_RST
-    Description:
+1. Software Debugger Reset
+    Description: Debugger wrote to BLOCKONLY_RST
     Components Reset:
     Components Preserved (including register subsets):
-2. Software System Reset (a.k.a soft reset). (RESET_CTRL written to)
-    Description:
+2. Software System Reset (a.k.a soft reset)
+    Description: RESET_CTRL written to
     Components Reset:
     Components Preserved (including register subsets):
-3. External System Reset. (PS_SRST_B pin assert)
-    Description:
+3. External System Reset
+    Description: PS_SRST_B pin assert
     Components Reset:
     Components Preserved (including register subsets):
-4. PS Only Reset. (PMU_GLOBAL.GLOBAL_RESET written to. FSBL clears after PS-only reboot sequence)
-    Description:
+4. PS Only Reset
+    Description: PMU_GLOBAL.GLOBAL_RESET written to. FSBL clears after PS-only reboot sequence
     Components Reset:
     Components Preserved (including register subsets):
-5. Internal System Reset. Caused by a system error that can corrected by a reset
-    Description:
+5. Internal System Reset
+    Description: Caused by a system error that can corrected by a reset
     Components Reset:
     Components Preserved (including register subsets):
-6. Internal POR. Caused by a system error that can only be corrected by a POR reset
-    Description:
+6. Internal POR
+    Description: Caused by a system error that can only be corrected by a POR reset
     Components Reset:
     Components Preserved (including register subsets):
-7. External POR. PS_POR_B signal asserted
-    Description:
+7. External POR
+    Description: PS_POR_B signal asserted
     Components Reset:
     Components Preserved (including register subsets):
