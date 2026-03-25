@@ -150,6 +150,23 @@ pub const CRL_APB_BANK3_CTRL4_REG_OFFSET        : u32 = 0x00000280;
 pub const CRL_APB_BANK3_CTRL5_REG_OFFSET        : u32 = 0x00000284;
 pub const CRL_APB_BANK3_STATUS_REG_OFFSET       : u32 = 0x00000288;
 
+// CRL APB Register Constants
+
+pub const CRL_APB_RESET_REASON_DEBUG_SYS_MASK        : u32 = 0x00000040; // Software Debugger Reset. Debugger wrote to BLOCKONLY_RST
+pub const CRL_APB_RESET_REASON_DEBUG_SYS_OFF         : u32 = 6;
+pub const CRL_APB_RESET_REASON_SOFT_MASK             : u32 = 0x00000020; // Software System Reset (a.k.a soft reset). (RESET_CTRL written to)
+pub const CRL_APB_RESET_REASON_SOFT_OFF              : u32 = 5;
+pub const CRL_APB_RESET_REASON_SRST_MASK             : u32 = 0x00000010; // External System Reset. (PS_SRST_B pin assert)
+pub const CRL_APB_RESET_REASON_SRST_OFF              : u32 = 4;
+pub const CRL_APB_RESET_REASON_PSONLY_RESET_REQ_MASK : u32 = 0x00000008; // PS Only Reset. (PMU_GLOBAL.GLOBAL_RESET written to. FSBL clears after PS-only reboot sequence)
+pub const CRL_APB_RESET_REASON_PSONLY_RESET_REQ_OFF  : u32 = 3;
+pub const CRL_APB_RESET_REASON_PMU_SYS_RESET_MASK    : u32 = 0x00000004; // Internal System Reset. Caused by a system error that can corrected by a reset
+pub const CRL_APB_RESET_REASON_PMU_SYS_RESET_OFF     : u32 = 2;
+pub const CRL_APB_RESET_REASON_INTERNAL_POR_MASK     : u32 = 0x00000002; // Internal POR. Caused by a system error that can only be corrected by a POR reset
+pub const CRL_APB_RESET_REASON_INTERNAL_POR_OFF      : u32 = 1;
+pub const CRL_APB_RESET_REASON_EXTERNAL_POR_MASK     : u32 = 0x00000001; // External POR. PS_POR_B signal asserted
+pub const CRL_APB_RESET_REASON_EXTERNAL_POR_OFF      : u32 = 0;
+
 #[inline(always)]
 pub unsafe fn crl_apb_reg_write(reg: u32, val: u32) {
     let crl_apb_reg : *mut u32 = (reg + CRL_APB_REG_BASEADDRESS) as *mut u32;
