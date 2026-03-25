@@ -13,15 +13,66 @@ Xilinx Stage 1:
             This would imply that the CSU needs to initialize the TPM so it can place the FSBL hashes into it.
 4. Save data section to duplicate data section on PS only and system resets in case of warm reset
     4.5 In case of warm reset, restore the data section (this seems weird, at which points during execution can a warm reset occur?)
-5. If PS only Reset, re-enable PL programming
-6. If not an APU only reset, System Init?
-7. Validate Boot reason ?
-8. if wdt support and not jtag bootmode and not apu only reset, init wdt
+5. If PS only Reset, re-enable PL programming (PCAP control & signal propagation)
+6. If not an APU only reset (as far as I can tell, anything not a warm reset), System Init:
+    6.1. If it is not a PS only reset and it is 1.0 or 2.0 version of the silicon, power up the PL and restore PL programming(?) isolation
+    6.2. If PS only reset, unblock the FPD and LPD AIB (what does this even mean, they just write 0 to AIB control until it takes?)
+    (optional step 6.3): Offer a PSU Init hook
+    6.4. If Dynamic DDR is supported (with an SPD structure)
+        6.4.1. Initialize DDR by first determining type of DDR from an I2C EEPROM
+        6.4.2. With the type determined, compute all DDR specific parameters (Dimm params, etc.). There is ALOT of code here
+        6.4.3. Setup DDR Controller
+        6.4.4. Setup DDR PHY Controller (how is this different than the one above?)
+        6.4.5. Do DDR Phy Training (unless it is in self refresh mode. Why does this allow it to bypass this?)
+    6.5. Bypass the SD card detection signal around the debouncing logic (this is becuase SD card may wait a long time to stabilize (this seems very wrong))
+7. Validate Boot reason
+    7.1 Read the Error status register 
+    7.2 If WDT supported, check if reset was a Watchdog timeout during the last FSBL execution.
+        7.2.1 If it was the case due to an LPD/FPD System WDT, clear the error, and mark for fallback image reboot
+    7.3 Mark Error status register as FSBL running in progress (used to assist in the above during reboots) (what happens to this register on all the types of reboots? Is this correct?)
+8. if WDT (watchdog timeout) supported and not jtag bootmode and not apu only reset, init wdt
+    8.1 Initialize the WDT module, setting the WDT clock values, timeout values, and enabling its capabilities to perform a system reset.
+    8.2 Start the WDT
+    8.3 Restart the WDT (why? Misnamed?)
 9. Put AES and SHA engines into reset
     Question: Why a second time???
 10. Processor Init
-11. If APU only reboot, clear any pending interrupts
+    10.1 Read the Cluster ID (what the heck is this? I assume it is to detect if we are running on the APU or the RPU)
+    10.2 If running on QEMU
+        10.2.5 Remap the cluster ID (lots of magic numbers here). There is an unsupported mode of the R5 (R5-1 (which seems to be the second R5 core when not in lock-step mode. Can the FSBL even run out of the second core in this case? Does the CSU ROM support loading the system in this way?))
+    10.3 If running on the A53, mark we are on the A53 and setup some architecture specific fsbl pointers (something arm specific?)
+        10.3.1 If running the R5, setup equivalent state as the above (and mark mode of R5 we are running in)
+        10.3.2 If running the R5, update the lower vector locations of the R5 Tightly-Couple Memory (TCM) and flush the data cache to write it out to the TCM
+    10.4 Mark something in a global PMU register to do something with warm restart (????)
+    10.5 Register Exceptions
+        10.5.1 On A53, setup the sync (undef), irq, fiq, and serror-abort handlers
+        10.5.2 On R5, setup the undef, swi (svc), prefetch-abort, data-abort, irq, and fiq handlers
+11. If APU only reboot and on the A53, clear any pending interrupts
+12. If not APU only reboot (R5 or A53 with TCM ECC supported), init the ECC for the TCM's (needs to be powered up first if on the A53). If on the A53, reset the RPU after this.
+13. If not APU only reboot and DDR self refresh is supported, if not in self refresh, initialize its ecc and mark it as not reserved. If it is in self-refresh, mark it as reserved (why is there a lock ?!?!? nasty)
+14. If not APU only reboot and DDR self refresh is not supported, initialize its ecc and mark it as not reserved
+15. If PL clear is forced and FSBL bitstream load is supported and not a ps-only reset and not an apu only reboot, initialize the fpga
+    15.1 ake PCAP out of reset and put it into write mode
+    15.2 If Silicon version greater than 2, power up the PL and restore isolation (?)
+    15.3 Reset the PL (assert the PCAP prog bit, wait, and then prog pcfg prog b)
+    15.4 If not ultramp and not mp qemu, wait till reset started and completed
+16. If not APU only reboot, board init
+    16.1 If ZCU board, Board config
+        16.1.1 There is ALOT of code here...all of it board specific
+    16.2 If ZCU102, PCIE reset
+        16.2.1 If PCIe Serdes ICM detected, toggle MIOs to reset and enable it
+17. If TPM is supported, init TPM
+    17.1 Initialize TPM SPI
+    17.2 Setup TPM Access bits
+    17.3 Get TPM ID and capabilities
+    17.4 Perform TPM Self test
+    17.5 Startup TPM (?)
+18. If TPM is supported, measure ROM
+    18.1 Send TPM commands containing the CSU ROM Digest
+19. If TPM is supported, measure FSBL
+    19.1 Send TPM commands containing the FSBL SHA Digest calculated previously (... so much can happen before this point, a vulnerability could have slipped in and now the FSBL is not properly measured)
 
+On Error in above -> ErrorLockdown
 
-
-On Error -> ErrorLockdown
+Xilinx Stage 2:
+1.
