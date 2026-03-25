@@ -1,5 +1,7 @@
 // Cryptographic Security Unit (CSU) Configuration Registers
 
+// All Values below are from UG 1087 (https://docs.amd.com/r/en-US/ug1087-zynq-ultrascale-registers)
+
 //CSU Config Register Baseaddress
 const CSU_CONF_REG_BASEADDRESS               : u32 = 0xFFCA0000;
 
@@ -161,6 +163,15 @@ pub unsafe fn csu_reg_write(reg: u32, val: u32) {
         csu_reg.write_volatile(val);
     }
 }
+
+#[inline(always)]
+pub unsafe fn csu_reg_read(reg: u32) -> u32 {
+    let csu_reg : *mut u32 = (reg + CSU_CONF_REG_BASEADDRESS) as *mut u32;
+    unsafe {
+        return csu_reg.read_volatile();
+    }
+}
+
 
 #[inline(always)]
 pub fn csu_aes_engine_reset() {
