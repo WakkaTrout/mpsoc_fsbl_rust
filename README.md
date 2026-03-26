@@ -3,7 +3,7 @@ A Rust Implementation of the Zynq MPSoC Ultrascale+ FSBL
 
 The high level early stages of the MPSoC boot flow can be seen here: https://docs.amd.com/r/en-US/ug1137-zynq-ultrascale-mpsoc-swdev/Boot-Flow
 
-The typical pipeline for the Zynq Ultrascale+ MPSoC is characterized as:
+The typical boot flow for the Zynq Ultrascale+ MPSoC is:
 
 POR -> PMU Early Stages -> CSU ROM Exectution -> FSBL -> ATF/SSBL -> OS
 
