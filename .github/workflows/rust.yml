@@ -8,18 +8,25 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  # These variables force 'abort' for both dev and release profiles
+  CARGO_PROFILE_DEV_PANIC: abort
+  CARGO_PROFILE_RELEASE_PANIC: abort
 
 jobs:
   build:
 
     runs-on: ubuntu-latest
-    env:
-      CARGO_TERM_COLOR: always
-      # These variables force 'abort' for both dev and release profiles
-      CARGO_PROFILE_DEV_PANIC: abort
-      CARGO_PROFILE_RELEASE_PANIC: abort
+    
     steps:
     - uses: actions/checkout@v4
+    
+    - name: Install Rust and ARM Target
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+        # This installs the 'core' crate for your specific target
+        targets: aarch64-unknown-none
+        
     - name: Build
       run: cargo build --verbose
     #- name: Run tests
