@@ -21,6 +21,8 @@ For backup/secondary boot devices (it may or may not be the same as the primary 
 
 Xilinx skips secondary image if primary is jtag (which makes sense as you would typically debug with jtag, so you wouldn't want to try to boot anothe image during jtag boot)
 
+For loading the PL (if required), the FSBL can use the CSU DMA to load an unencrypted bitstream into the PL or use the CSU DMA through the AES engine which pipes the decrypted bitstream into the PL directly.
+
 Questions:
     1. Why can't we support more than two SD cards? hardware limitation?
     2. What truly is the primary boot device? (I believe the definition depends on the reset mode). Doesn't the CSU typically initialize the first boot device in order to even get the first FSBL image? Is there duplicate initialization going on here for the first image? Is the primary boot device supposed to be the device the FSBL booted out of and now it will try to get the next stage out of it?
