@@ -1,5 +1,4 @@
  A -> B means A must precede B
 
 1. (If a HW based SHA calculation is required (vs a SW based calculation)) CSU SHA Engine Reset -> TPM Hash of FSBL
-2. (If a HW based AES calculation is required (vs a SW based calculation)) CSU AES Engine Reset -> TPM Hash of FSBL
-3.
+2.
