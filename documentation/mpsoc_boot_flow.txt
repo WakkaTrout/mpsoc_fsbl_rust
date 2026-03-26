@@ -1,0 +1,11 @@
+The high level early stages of the MPSoC boot flow can be seen here: https://docs.amd.com/r/en-US/ug1137-zynq-ultrascale-mpsoc-swdev/Boot-Flow
+
+The typical pipeline for the Zynq Ultrascale+ MPSoC is characterized as:
+
+POR -> PMU Early Stages -> CSU ROM Exectution -> FSBL -> ATF/SSBL -> OS
+
+This project concerns the FSBL software.
+
+There are other ways to enter this pathway (see mpsoc_reset_types.txt) and many devices to pull software from to procede to later stages of the booting (see mpsoc_boot_devices.txt).
+
+The job of the FSBL is ensure a stable, secure, efficient, and fault tolerant way to move the boot process along.
