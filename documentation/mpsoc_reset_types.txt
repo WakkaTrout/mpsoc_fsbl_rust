@@ -34,7 +34,7 @@ This is written from the perspective from the FSBL and what it experiences due t
 
 7. External POR
     Description: PS_POR_B signal asserted
-    Components Reset: PMU Processing State, CSU Processing State, PMU RAM, CSU RAM, OCM?, A53 Processing State (if running?), R5 Processing State (if running?), Mali GPU (if running?), PL (if running?), internal transcievers?, peripheral controllers?, any actual peripherals?, clocks?
+    Components Reset: PMU Processing State, CSU Processing State, PMU RAM, CSU RAM, OCM?, A53 Processing State (if running?), caches?, R5 Processing State (if running?), Mali GPU (if running?), PL (if running?), internal transcievers?, peripheral controllers?, any actual peripherals?, clocks?
     Components Preserved (including register subsets): What peripherals are preserved is system dependent and what the External POR signal resets other than the MPSoC. The FSBL may or may not assume attached peripherals are reset as well.
 
 
