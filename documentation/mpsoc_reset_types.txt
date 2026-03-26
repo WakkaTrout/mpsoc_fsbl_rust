@@ -42,3 +42,4 @@ Questions:
 1. Are there failures that should cause one reset mechanism to be treated as a different one? e.g. failure of a DDR/OCM so a warm reboot cannot take place.
 2. What type of debuggers or debugging mechanisms are there that can write to that BLOCKONLY_RST? Is it only JTAG?
 3. What type of system restrictions are there on what can cause the different types or resets?
+4. Do certain resets only touch certian power domains? Clock Domains? etc.
