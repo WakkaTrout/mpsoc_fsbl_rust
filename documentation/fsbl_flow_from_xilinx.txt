@@ -145,11 +145,69 @@ Xilinx Stage 3 (Next Stage Software Load):
     5.10. If we are writing to the PMU (this is the PMUFW load), if the destination address is non-zero, triger the PMUU 0 IPI (?)
     5.11 If we are writing to the PMU, wait till the PMU goes into a sleep state (this should be done before writing into the PMU RAM (why? conflict?))
     5.12 Use the device copy to vopy the partition to its destination
-6. Validate the Partition (again, after copy?) (there is SO MUCH code here...)
-    6.1 
-    
+6. Validate the Partition (again, after copy?) (there is SO MUCH code here...) (bro, why do we load the bitstream here and they name it validate partition... it feels so wrong)
+    6.1 If secure boot is supported and the partition is encrypted, copies global IV (what sets this?) to a local buffer and then updates it from the partition header. If secure boot is not enabled and the partition is encrypted, return error
+    6.2 If UNPROVISIONED_AUTH_SIGN_EXCLUDE is defined (?) and the partition header has an RSA signature and authentication is not enabled for the FSBL, return error. If does not have rsa sig, mark not auth. Else, mark auth
+    6.3 If UNPROVISIONED_AUTH_SIGN_EXCLUDE is not defined and the partition header has an RSA signature and authentication is enabled for the FSBL, then mark auth, otherwise, mark not auth
+    6.4 Get the destination Device (bro, again... we just got it in partition copy (5.6)....)
+    6.5 If BS is supported and writing to the PL and PS only reset, then skip the rest of step 6 (why must the checks above be done and not the rest for this image?)
+    6.6 Get the destination device (again, but it is a pointer that is read, so it is cheap, but still, this whole thing feels like a mess)
+    6.7 Get the load address for the destination CPU (again again again ahhhh)
+        6.7.1 If we are loading onto R5 core 0 and load address is in or below the TCM end address or the load address is within the BTCM address range, if the image does not fit into a single TCM bank, then return error
+        6.7.2 If we are not loading onto R5 core 0 or we are loading into an address greater than TCM end address and we are not loading into the BTCM address range, do the checks for the R5 core 1 that we just did to see if in address ranges and we fit in a bank
+        6.7.3 If we are instead loading onto R5 lockstep, and we are loading into and address less than tcm start + 4*bank length, check to see if we fit into 4 banks. If not return error. (so does this imply a single core only gets 1 TCM bank?)
+        6.7.4 Set the load address to the validated and adjusted address
+    6.8 If BS supported and writing to PL and address is dummy address, then use the ddr temp address
+    6.9 If encryption is enabled and secure boot is supported, initialize the AES and provide it with the IV (wait, are we reinitializing the AES for every partition?!?!?!?, it makes sense to reset it with a new IV, but is this full initialization?)
+    6.10 If BS supported and writing to PL, provide hook for user config and then if PL clear is supported, do pcap init
+        6.10.1 TBD
+    6.11 if the partition has checksum enabled, calculate checksum. On failure, error partition.
+    6.12 if authentication is enabled and secure boot is supported, if we are not writing to the PL, perform authentication, on failure error partition
+    6.12 if authentication is enabled and secure boot is supported and BS is supported, validate the PL Bitstream by validating the block size and the header attributes (SHA2 is not supported? I am okay with deprecating it in favor of SHA3, unless SHA2 is more secure?). Setup (from either OCM or DDR?) and perform the PL download. On failure, reset the PL (what, why?) and if encryption is enabled, set some more pcap prog stuff (????)
+        6.12.1 TBD
+    6.13 if authentication is enabled and secure boot is not supported, then error
+    6.14 if encryption is enabled and not writing to the PL and secure boot is supported, perform AES decrypt (error on failure)
+    6.15 is encryption is enabled and secure boot is not supported, error
+    6.16 if BS is defined and if writing to the PL and authentication is not enabled and if encryption is enabled and secure boot is defined and not loading from the OCM and has a TPM, perform aes set chunking and sha and reset PL (and perform PL zeroization)
+    6.17 if BS is defined and if writing to the PL and authentication is not enabled and if encryption is enabled and secure boot is defined and not loading from the OCM and does not have TPM, decrypt PL into PCAP and reset PL (and perform PL zeroization)
+    6.18 if BS is defined and if writing to the PL and authentication is not enabled and if encryption is enabled and secure boot is defined and loading from the OCM, aes set chunking and decrypt. On decryption failurem error and reset PL (and perform PL zeroization)
+    6.19 if BS is defined and if writing to the PL and authentication is not enabled and if encryption is not enabled and not loading from the OCM, just dma directly into PL and write the PCAP.
+    6.20 if BS is defined and if writing to the PL and authentication is not enabled and if encryption is not enabled and loading from the OCM, chunked BS Txfer
+    6.21 if BS is defined and if writing to the PL, wait for PL programming to finish (can error on timeout or if PL enters bad state) and then reset PCAP after transfer (do we need to reset the PCAP interface after every transfer??? it is done all over the place in the code)
+    6.22 if BS is defined and if writing to the PL, perform ps pl isolation removal data (?)
+        6.22.1 TBD
+    6.23 if BS is defined and if writing to the PL, perform ps pl reset config data
+        6.23.1 TBD
+    6.24 if BS is defined and if writing to the PL and if secure boot is supported, if either authentication or encrypted is enabled, set BS state of firmware to secure, otherwise, set to nonsecure 
+    6.25 if BS is defined and if writing to the PL and if secure boot is not supported, set BS state of firmware to nonsecure     
+    6.26 if BS is defined and if writing to the PL, provide post download hook
+    6.27 If not writing to PL and not writing to PMU, check the CPU no and update the A53 exec state on sucess for handoff (I think this is a duplicate check that is done in 5.2, Xilinx.....)
+    6.28 if TPM is supported, get the PCR index and if greater than 0, if not the PL index and checksum is disabled, perform SHA. If PCR index is greater than 0 and the PL index, if authentication is disabled, if encryption is enabled, finish the sha. if authentication is disabled and encryption is diabled and checksum is not enabled, perform a digest
+    6.29 if TPM is supported and PCR index is greater than 0, ship the measurement off to TPM
+7. if on r5 and Ivt backup is true, memcopy the lovex and updat them. Flush cache and set R5 exceptions for lovec. Restore the hivec (what is all of this?)
+8. Check PMUFW for load status
+    8.1 if writing to the PMU, the load is done if partition num + 1 <= no of partitions -1 and the next partition is not the pmu OR the partition num  + 1 > no of partitions -1. Otherwise, not done
+    8.2 if writing to the PMU and the load is done, wakup the PMU by writing to the global controller and reading until it is awake (no timeout?????)
 
+On Error in above steps -> ErrorLockdown
 
-On Error in above -> ErrorLockdown
+9. Mark Used RPU Cores
+    9.1 tbd
+10. Check early handoff
+    10.1 if early handoff supported and Get the load address for the destination CPU (again again again ahhhh)
+        10.1.1 If we are loading onto R5 core 0 and load address is in or below the TCM end address or the load address is within the BTCM address range, if the image does not fit into a single TCM bank, then return error
+        10.1.2 If we are not loading onto R5 core 0 or we are loading into an address greater than TCM end address and we are not loading into the BTCM address range, do the checks for the R5 core 1 that we just did to see if in address ranges and we fit in a bank
+        10.1.3 If we are instead loading onto R5 lockstep, and we are loading into and address less than tcm start + 4*bank length, check to see if we fit into 4 banks. If not return error. (so does this imply a single core only gets 1 TCM bank?)
+        10.1.4 Set the load address to the validated and adjusted address
+    10.2 if early handoff supported and Get the destination device (again, but it is a pointer that is read, so it is cheap, but still, this whole thing feels like a mess)
+    10.3 if early handoff supported and we are booting into the PS, updated destination CPU
+    10.4 if early handoff supported and there is another partition, gets the next partitions CPU and dev (as in 10.1 and 10.2)
+    10.5 if early handoff supported and check early handoff CPU (dest CPU is R5 0, R5 1, or R5 L, then true, else false) is legal and we are not booting onto the current device the FSBL is running on, then we can early handoff
+11. if there are more partitions but we can early handoff, then perform early handoff. Otherwise, load next partition by incrementing partition number and restarting stage 3 (is there a legal order of partitions for early handoff?)
+12. if there are no more partitions, then move to stage 4
 
-Xilinx Stage 4:
+Xilinx Stage 4 (handoff):
+1. Handoff
+    1.1.
+
+On Error in above steps -> ErrorLockdown
