@@ -8,6 +8,7 @@ mod crl_apb_constants;
 use crl_apb_constants::*;
 
 // This assembly runs first and sets up the stack pointer
+// TODO: Does the startup Assembly need to change between an A53 core, R5 core, or R5 lockstep?
 global_asm!(
     ".section .text._start",
     ".global _start",
