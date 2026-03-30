@@ -23,5 +23,5 @@
 22. The FSBL SHALL execute to completion within XX amount of time, where XX depends on the clock frequency of the processor it is executing on (Desire: want this to be as small as physically possible)
 23. The FSBL SHALL be able to correct itself if radiation mutates any of its internal state variables during execution
 24. The FSBL SHALL detect and report failures in initializing any peripherals it is configured to initialize
-25. The FSBL SHALL support being able to load a bitstream into the PL (on certain types of boots, which ones?)
-26. The FSBL SHALL support being able to load the PMU FW into the PMU (on certain types of boots, which ones?)
+25. The FSBL SHALL support being able to load a bitstream into the PL (on certain types of boots, which ones?) (is this bitstream packaged in the boot image or can it be from some other file?)
+26. The FSBL SHALL support being able to load the PMU FW into the PMU (on certain types of boots, which ones?) (is this bitstream packaged in the boot image or can it be from some other file?)
