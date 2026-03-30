@@ -26,6 +26,9 @@ Structure of a boot image (from https://docs.amd.com/v/u/en-US/ug1085-zynq-ultra
    Questions
     1. Why are there those size restrictions? Does it have to do with OCM sizes? PMU RAM sizes? CSU RAM sizes? Hardcoded processor limits? Does it need to fit the full thing in to decrypt it placing a limit there?
     2. Are those authentication and encryption boxes correct?
+    3. Can the PMU FW be loaded in a different file in addition to the boot image?
+    4. Can a bitstream be put into the boot image? Or does it need to be in a different file format?
+    5. Is this file format used for additional stages that need to be loaded (e.g. U-Boot, Grub, etc.)
 
 The boot header has the following structure:
 
