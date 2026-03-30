@@ -5,7 +5,10 @@ The high level early stages of the MPSoC boot flow can be seen here: https://doc
 
 The typical boot flow for the Zynq Ultrascale+ MPSoC is:
 
+                                                      -> PMUFW (optional)
 POR -> PMU Early Stages -> CSU ROM Exectution -> FSBL -> ATF/SSBL -> OS
+                                              -> PMUFW (optional)
+
 
 This project concerns the FSBL software.
 
