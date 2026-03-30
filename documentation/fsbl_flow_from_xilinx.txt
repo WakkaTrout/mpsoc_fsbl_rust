@@ -1,6 +1,6 @@
 From UG1137 Phases of FSBL Operation (https://docs.amd.com/r/en-US/ug1137-zynq-ultrascale-mpsoc-swdev/Phases-of-FSBL-Operation)
 
-Xilinx Stage 1:
+Xilinx Stage 1 (System/Board Init):
 1. Put AES engine into Reset
 2. Put SHA engine into Reset
 3. If TPM supported
@@ -41,8 +41,8 @@ Xilinx Stage 1:
     10.2 If running on QEMU
         10.2.5 Remap the cluster ID (lots of magic numbers here). There is an unsupported mode of the R5 (R5-1 (which seems to be the second R5 core when not in lock-step mode. Can the FSBL even run out of the second core in this case? Does the CSU ROM support loading the system in this way?))
     10.3 If running on the A53, mark we are on the A53 and setup some architecture specific fsbl pointers (something arm specific?)
-        10.3.1 If running the R5, setup equivalent state as the above (and mark mode of R5 we are running in)
-        10.3.2 If running the R5, update the lower vector locations of the R5 Tightly-Couple Memory (TCM) and flush the data cache to write it out to the TCM
+        10.3.1 If running the R5 (single core or lockstep?), setup equivalent state as the above (and mark mode of R5 we are running in)
+        10.3.2 If running the R5 (single core or lockstep?), update the lower vector locations of the R5 Tightly-Couple Memory (TCM) and flush the data cache to write it out to the TCM
     10.4 Mark something in a global PMU register to do something with warm restart (????)
     10.5 Register Exceptions
         10.5.1 On A53, setup the sync (undef), irq, fiq, and serror-abort handlers
@@ -74,7 +74,7 @@ Xilinx Stage 1:
 
 On Error in above -> ErrorLockdown
 
-Xilinx Stage 2:
+Xilinx Stage 2 (Boot Device Init, FSBL Validate (this should be done much earlier :( ), and Fallback image identification):
 1. Initialize the Primary Boot Device when not in JTAG
     1.1 Read Boot Mode Register as that will signify what the primary boot device is
     1.2 If the boot device requires it, initialize the CSU DMA (didn't we already do this if we support TPMs... bruh)
@@ -93,11 +93,53 @@ Xilinx Stage 2:
 3. Initialize Secondary Boot Device as a potential fallback if the image header signals another device when not in JTAG
     3.1 Big switch statement to get necessary initialization function
     3.2 With boot device identified, initialize the boot device
-    3.3 Validate header (again.... is this for a third image??????)
+    3.3 Validate header (validating again.... is this for a third image??????)
 4. If we are in JTAG mode, mark the RPU cores available for JTAG boot and skip to stage 4
 5. Clear RPU status register
 
 On Error in above -> ErrorLockdown
 
-Xilinx Stage 3:
-1.
+Xilinx Stage 3 (Next Stage Software Load):
+1. If not APU only reset and WDT enabled, restart the watchdog (as copying can take awhile (this seems inefficient, there as to be some DMA like mechanism to do this more asynchronously so we can still kick the WDT))
+2. If DDR self refresh supported, poll DDR until it is ready
+    2.1 Read the PMU global controller to see if the PMU firmware is ready (some special bit, can there be a race here if the FSBL gets here faster than the PMUFW?)
+    2.2  Read the DDR status register and write the ddr controller init done flag to the status register (PMU will then take DDR out of self refresh if necessary)
+    2.3  Check the DDR ready status flag and if not read, poll DDR until it exits self-refresh (or timeout) and then mark reserved as false (ah, this marking specifies to the system that it is a valid memory device to use) (I love how the timeout does not return an error for xilinx.... great)
+3. Validate Partition Header (how is this different from the boot headers that were verified earlier? Is it because this is next stage software and the previous headers where FSBL/BOOT headers?)
+    3.1 Validate Header Checksum (32 bit sum the header, then invert it, and then compare to what is in header) (Are there even any size checks or boundary checks???)
+    3.2 Check to see that partition belongs to the FSBL (what does this mean?)
+    3.3 Validate the fields in the next partitions header
+        3.3.1 If secure boot is supported and force encrypt is set, read the security efuse and if the secure boot efuse is set, validate that the partition is encrypted
+        3.3.2 Get the destination CPU from the partition, check to see that it was an APU only reset, and check if the destination CPU is the currently running CPU (if not, we can skip the next checks and return success not partition owner), if so continue on
+        3.3.3 If the destination CPU is not specified, then it implies the currently running CPU
+        3.3.4 Check the partition's unencrypted data length and if not 0 and the image is authenticated or encrypted, return error
+        3.3.5 Check the partition's unencrypted data length and if the execution address is less than the QSPI Linear base address start or greater than the qspi linear base address end, return error (does this restrict to booting out of QSPI??)
+        3.3.6 If the image is not authenticated or encrypted, but there is encrypted data (must be the same length as the unencrypted data and total length), then return error
+        3.3.7 If the image is authenticated but not encrypted, and encrypted word length is not greater total word length (this seems named funny) (encrypted length must == unencrypted length and encrypted length < total length), then return error
+        3.3.8 If the image is not authenticated but it is encrypted, the encrypted word length must be greater than the unencrypted word length and must equal the total data word length. Otherwise return error
+        3.3.9 If the image is both authenticated and encrypted, then encrypted word length must be greater than the unencrypted word length and the total word length must be greater than the encrypted word length. Otherwise, return error (should any of these checks actually look at the size of these length in relation to each other instead of just inequalities on their lengths?)
+        3.3.10 If we are running on the RPU and the destination CPU is the A53 and we are trying to load the image into DDR address 0x40000, then we are going to accidentally clobber the TCM (as it is at that address in the R5 address space), so return error
+        3.3.11 If the partition header specifies a type other than no checksum or sha3 hash, then return error
+        3.3.12 Check that the destination CPU is not invalid (shouldn't this have been checked earlier?)
+        3.3.13 If the destination CPU is R5 solely core 0 or core 1 and we are running in lockstep, then error
+        3.3.14 If the destination CPU is R5 lockstep but we are running on core 0 alone, then error (this means we cannot change the mode once we are running on it)
+        3.3.15 If the destination device is greater than dest device pmu, then return error (does this imply we can run on the PMU??? Or could this actually be PMUFW? Does the FSBL load it?)
+4. If the FSBL is not the partition owner, skip this partition
+5. Copy the partition to the specified destination in the partition header
+    5.1 If the unencrypted word length is 0 (does this imply we are talking about an encrypted image?), then check to see if the destination CPU is already going to be loaded with a partition (we are apparently loading multiple partitions). If so, return error
+    5.2 If the unencrypted word length is 0 and this is the only partition being loaded on the CPU, get the A53 exec state from the partition header (is this problematic if we are on an R5?) and set the destination CPU to have that exec state for the hand off and set the handoff address
+    5.3 If unencrypted word length is not 0 and secure boot is supported and the RSA signature is present and the device is not destined for the PL, then perform a copy from source to authentication buffer. Return error on copy failure
+    5.4 If unencrypted word length is not 0 and we are writing to the PL and if XFSBL_BS (bitstream?) is supported and it is not a PS only reset and we support loading the PL from the OCM and we are not loading from the OCM or we do not support loading the PL from the OCM, then return error
+    5.5 If unencrypted word length is not 0 and we are writing to the PL and if XFSBL_BS is not supported, return error
+    5.6 Get the load address for the destination CPU
+        5.6.1 If we are loading onto R5 core 0 and load address is in or below the TCM end address or the load address is within the BTCM address range, if the image does not fit into a single TCM bank, then return error
+        5.6.2 If we are not loading onto R5 core 0 or we are loading into an address greater than TCM end address and we are not loading into the BTCM address range, do the checks for the R5 core 1 that we just did
+        5.6.3 If we are instead loading onto R5 lockstep, and we are loading into and address less than tcm start + 4*bank length, check to see if we fit into 4 banks. If not return error. (so does this imply a single core only gets 1 TCM bank?)
+        5.6.4 Set the load address to the validated and adjusted address
+    5.7 Configure Memory
+        5.7.1
+    5.8
+
+On Error in above -> ErrorLockdown
+
+Xilinx Stage 4:
