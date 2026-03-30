@@ -3,7 +3,7 @@
 3. The FSBL SHALL validate the consistency of the boot reason with the detected system state. (This is extremely vague, what does this mean?)
 4. The FSBL MAY support changing to a different boot image if it detects the current boot image is corrupted.
     4 Additional Information. The intended way to accomplish this is to program the next boot image address into the multiboot header and then trigger a soft reset
-5. The FSBL SHALL clear the psonly_reset_req bit from the CRL_APB Reset Reason Register if a PS-only reboot occurred (reference https://docs.amd.com/r/en-US/ug1087-zynq-ultrascale-registers/RESET_REASON-CRL_APB-Register)
+5. The FSBL SHALL clear the psonly_reset_req bit from the CRL_APB Reset Reason Register if a PS-only reboot occurred (reference https://docs.amd.com/r/en-US/ug1087-zynq-ultrascale-registers/RESET_REASON-CRL_APB-Register) (when should it clear it, only on success?)
 6. The FSBL SHALL initialize any attached DDR3/LPDDR3/DDR4/LPDDR4's.
 7. The FSBL SHALL load and handoff to either: a SSBL, directly to an OS, or a custom application
 8. The FSBL SHALL be able to run on any core of the A53 (both dual core and quad core variations) and any core of the R5 of the MPSoC
@@ -14,7 +14,7 @@
 13. The FSBL SHALL support reseting and setting up the PL if configured (should this include loading the bitstream as well?)
 14. The FSBL SHALL support setting up the Hardware Watchdog (WDT) if configured
 15. The FSBL SHALL support running within a QEMU execution environment
-16. The FSBL SHALL support initializing the R5 when it runs on the A53 if configured.
+16. The FSBL SHALL support initializing the R5 when the FSBL runs on the A53 if configured.
 17. The FSBL SHALL support setting up ECC on internal and attached memory devices if configured (this includes DDR's, R5's TCM, etc.)
 18. The FSBL SHALL support mutliboot, falling back to other FSBLs within a boot device on detected failures (TODO: this is vague, define what this means)
 19. The FSBL SHALL report errors on the error pins if execution fails (again, vague, define what this means a bit better)
@@ -23,3 +23,4 @@
 22. The FSBL SHALL execute to completion within XX amount of time, where XX depends on the clock frequency of the processor it is executing on (Desire: want this to be as small as physically possible)
 23. The FSBL SHALL be able to correct itself if radiation mutates any of its internal state variables during execution
 24. The FSBL SHALL detect and report failures in initializing any peripherals it is configured to initialize
+25. The FSBL SHALL support being able to load a bitstream into the PL (on certain types of boots, which ones?)
