@@ -133,12 +133,16 @@ Xilinx Stage 3 (Next Stage Software Load):
     5.5 If unencrypted word length is not 0 and we are writing to the PL and if XFSBL_BS is not supported, return error
     5.6 Get the load address for the destination CPU
         5.6.1 If we are loading onto R5 core 0 and load address is in or below the TCM end address or the load address is within the BTCM address range, if the image does not fit into a single TCM bank, then return error
-        5.6.2 If we are not loading onto R5 core 0 or we are loading into an address greater than TCM end address and we are not loading into the BTCM address range, do the checks for the R5 core 1 that we just did
+        5.6.2 If we are not loading onto R5 core 0 or we are loading into an address greater than TCM end address and we are not loading into the BTCM address range, do the checks for the R5 core 1 that we just did to see if in address ranges and we fit in a bank
         5.6.3 If we are instead loading onto R5 lockstep, and we are loading into and address less than tcm start + 4*bank length, check to see if we fit into 4 banks. If not return error. (so does this imply a single core only gets 1 TCM bank?)
         5.6.4 Set the load address to the validated and adjusted address
     5.7 Configure Memory
-        5.7.1
-    5.8
+        5.7.1 If we are loading onto R5 core 0 and load address is in or below the TCM end address or the load address is within the BTCM address range, if the running CPU is not the destination CPU, then power up the R5 core 0 (return error if it doesn't power up). Initialize the TCM ECC if not already initialized
+        5.7.2 If we are not loading onto R5 core 0 or we are loading into an address greater than TCM end address and we are not loading into the BTCM address range, do the checks for the R5 core 1 that we just did to see if in address ranges. if the running CPU is not the destination CPU, then power up the R5 core 1 (return error if it doesn't power up). Initialize the TCM ECC if not already initialized
+        5.7.3 If we are instead loading onto R5 lockstep, and we are loading into and address less than tcm start + 4*bank length, if the running CPU is not the destination CPU, then power up the R5 in lockstep (return error if it doesn't power up). Initialize the TCM ECC if either TCM is not already initialized
+    5.8 If arm r5 is defined (does that mean it is supported? Why isn't the rest of the code have these defines? Should I have different top level code for different processors we are running on? can use dest cpu in header to enforce this), disable IsR5IvtBackup (?)
+    5.9 If arm r5 is defined, if the FSBL is on the r5 0 or r5 lockstep and we are loading into the TCM in the IVT region, enable IsR5IvtBackup, copy, r5 hivec, update the hivec, flush data cache, set the r5 excep vector hi vec (?)
+    5.10. If we are writing to the PMU (this is the PMUFW load), 
 
 On Error in above -> ErrorLockdown
 
