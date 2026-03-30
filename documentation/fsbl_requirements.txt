@@ -6,10 +6,10 @@
 5. The FSBL SHALL clear the psonly_reset_req bit from the CRL_APB Reset Reason Register if a PS-only reboot occurred (reference https://docs.amd.com/r/en-US/ug1087-zynq-ultrascale-registers/RESET_REASON-CRL_APB-Register)
 6. The FSBL SHALL initialize any attached DDR3/LPDDR3/DDR4/LPDDR4's.
 7. The FSBL SHALL load and handoff to either: a SSBL, directly to an OS, or a custom application
-8. The FSBL SHALL be able to run on any core of the A53 and any core of the R5 of the MPSoC
+8. The FSBL SHALL be able to run on any core of the A53 (both dual core and quad core variations) and any core of the R5 of the MPSoC
 9. The FSBL SHALL be able to run on the R5 in lockstep mode or on a single core when not in lockstep mode
 10. The FSBL SHALL be able to load the next stage software from the following boot devices: USB, JTAG, QSPI (24 or 32 bit bus), NAND, SD Card, eMMC flash
-11. The FSBL SHALL be capable of supporting system warm-reboots (what does this mean?)
+11. The FSBL SHALL be capable of supporting system warm-reboots (what does this mean really?)
 12. The FSBL SHALL support measuring itself and providing the CSU ROM Hash and its own hash to a FIP 140-2 external TPM (if configured)
 13. The FSBL SHALL support reseting and setting up the PL if configured (should this include loading the bitstream as well?)
 14. The FSBL SHALL support setting up the Hardware Watchdog (WDT) if configured
