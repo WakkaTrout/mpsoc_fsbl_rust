@@ -5,13 +5,13 @@ The high level early stages of the MPSoC boot flow can be seen here: https://doc
 
 The typical boot flow for the Zynq Ultrascale+ MPSoC is:
 
-                                                      -> PMUFW (optional)
 POR -> PMU Early Stages -> CSU ROM Exectution -> FSBL -> ATF/SSBL -> OS
-                                              -> PMUFW (optional)
+
+With PMUWF optionally being loaded either by the CSU ROM or the FSBL.
 
 
 This project concerns the FSBL software.
 
 There are other ways to enter this pathway (see mpsoc_reset_types.txt) and many devices to pull software from to procede to later stages of the booting (see mpsoc_boot_devices.txt).
 
-The job of the FSBL is ensure a stable, secure, efficient, and fault tolerant way to move the boot process along.
+The job of the FSBL is ensure a stable, secure, efficient, and fault tolerant way to move the boot process along. Many systems make use of the MPSoC and the goal of this project is to enhance both the correctness and speed of the FSBL
