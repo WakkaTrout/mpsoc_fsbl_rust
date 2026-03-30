@@ -18,7 +18,7 @@ Xilinx Stage 1 (System/Board Init):
     6.1. If it is not a PS only reset and it is 1.0 or 2.0 version of the silicon, power up the PL and restore PL programming(?) isolation
     6.2. If PS only reset, unblock the FPD and LPD AIB (what does this even mean, they just write 0 to AIB control until it takes?)
     (optional step 6.3): Offer a PSU Init hook
-    6.4. If Dynamic DDR is supported (with an SPD structure)
+    6.4. If Dynamic DDR is supported (with an SPD structure) (Do all DDR's have the SPD structure? If not, can we add support for them?)
         6.4.1. Initialize DDR by first determining type of DDR from an I2C EEPROM
         6.4.2. With the type determined, compute all DDR specific parameters (Dimm params, etc.). There is ALOT of code here
         6.4.3. Setup DDR Controller
@@ -128,7 +128,7 @@ Xilinx Stage 3 (Next Stage Software Load):
 5. Copy the partition to the specified destination in the partition header
     5.1 If the unencrypted word length is 0 (does this imply we are talking about an encrypted image?), then check to see if the destination CPU is already going to be loaded with a partition (we are apparently loading multiple partitions). If so, return error
     5.2 If the unencrypted word length is 0 and this is the only partition being loaded on the CPU, get the A53 exec state from the partition header (is this problematic if we are on an R5?) and set the destination CPU to have that exec state for the hand off and set the handoff address
-    5.3 If unencrypted word length is not 0 and secure boot is supported and the RSA signature is present and the device is not destined for the PL, then perform a copy from source to authentication buffer. Return error on copy failure
+    5.3 If unencrypted word length is not 0 and secure boot is supported and the RSA signature is present and the device is not destined for the PL, then perform the device copy of the partition from source to authentication buffer. Return error on copy failure
     5.4 If unencrypted word length is not 0 and we are writing to the PL and if XFSBL_BS (bitstream?) is supported and it is not a PS only reset and we support loading the PL from the OCM and we are not loading from the OCM or we do not support loading the PL from the OCM, then return error
     5.5 If unencrypted word length is not 0 and we are writing to the PL and if XFSBL_BS is not supported, return error
     5.6 Get the load address for the destination CPU
@@ -142,7 +142,13 @@ Xilinx Stage 3 (Next Stage Software Load):
         5.7.3 If we are instead loading onto R5 lockstep, and we are loading into and address less than tcm start + 4*bank length, if the running CPU is not the destination CPU, then power up the R5 in lockstep (return error if it doesn't power up). Initialize the TCM ECC if either TCM is not already initialized
     5.8 If arm r5 is defined (does that mean it is supported? Why isn't the rest of the code have these defines? Should I have different top level code for different processors we are running on? can use dest cpu in header to enforce this), disable IsR5IvtBackup (?)
     5.9 If arm r5 is defined, if the FSBL is on the r5 0 or r5 lockstep and we are loading into the TCM in the IVT region, enable IsR5IvtBackup, copy, r5 hivec, update the hivec, flush data cache, set the r5 excep vector hi vec (?)
-    5.10. If we are writing to the PMU (this is the PMUFW load), 
+    5.10. If we are writing to the PMU (this is the PMUFW load), if the destination address is non-zero, triger the PMUU 0 IPI (?)
+    5.11 If we are writing to the PMU, wait till the PMU goes into a sleep state (this should be done before writing into the PMU RAM (why? conflict?))
+    5.12 Use the device copy to vopy the partition to its destination
+6. Validate the Partition (again, after copy?) (there is SO MUCH code here...)
+    6.1 
+    
+
 
 On Error in above -> ErrorLockdown
 
