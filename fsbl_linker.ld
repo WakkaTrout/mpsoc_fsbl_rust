@@ -19,23 +19,24 @@ MEMORY
    ocm_ram_1_BASEADDR : ORIGIN = 0xFFFD0000, LENGTH = 0x0010000
    ocm_ram_2_BASEADDR : ORIGIN = 0xFFFE0000, LENGTH = 0x0010000
    ocm_ram_3_BASEADDR : ORIGIN = 0xFFFF0000, LENGTH = 0x0010000
+   ocm_ram_total_BASEADDR : ORIGIN = 0xFFFC0000, LENGTH = 0x0040000
 }
 
 ENTRY(_start)
 
 SECTIONS
 {
-    /* Starts at 0x80000 (common for AArch64 boot) */
+    /* Starts at 0x80000 (common for AArch64 boot, should it be at a different address since we are booting out of OCM for an FSBL?) */
     . = 0x80000;
 
     .text : {
         /* Ensure your startup assembly/code is at the very beginning */
         KEEP(*(.text._start))
         *(.text .text.*)
-    } > ocm_ram_0_BASEADDR
+    } > ocm_ram_total_BASEADDR
 
-    .rodata : { *(.rodata .rodata.*) } > ocm_ram_0_BASEADDR
-    .data : { *(.data .data.*) } > ocm_ram_0_BASEADDR
+    .rodata : { *(.rodata .rodata.*) } > ocm_ram_total_BASEADDR
+    .data : { *(.data .data.*) } > ocm_ram_total_BASEADDR
     
     .bss : {
         . = ALIGN(16);
@@ -44,7 +45,7 @@ SECTIONS
         *(COMMON)
         __bss_end = .;
         . = ALIGN(16);
-    } > ocm_ram_0_BASEADDR
+    } > ocm_ram_total_BASEADDR
 
     /* Align the end of the binary to a page boundary */
     . = ALIGN(4096);
