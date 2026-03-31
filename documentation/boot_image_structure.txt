@@ -1,14 +1,19 @@
 Structure of a boot image (from https://docs.amd.com/v/u/en-US/ug1085-zynq-ultrascale-trm Chapter 11 and Chapter 12):
 
    __________________________________________________________
-   |                                                        |
-   |                     Boot Header                        |
-   |                      2232 Bytes                        |
+   |                                                        | |   |
+   |                     Boot Header                        | |   |
+   |                      2232 Bytes                        | |   |
+   |                                                        | |   |
+   ---------------------------------------------------------- |   |
+   |                                                        | |   |
+   |                    Partition Header                    | |   |
+   |                  System Defined Size                   | |   |
    ---------------------------------------------------------- | A | E |
    |                                                        | | U | N |
-   |                    Partition Header                    | | T | C |
-   |                  System Defined Size                   | | H | R |
-   ---------------------------------------------------------- | E | Y |
+   |                                                        | | T | C |
+   |                                                        | | H | R |
+   -                                                        - | E | Y |
    |                                                        | | N | P |
    |                    PMU Firmware Image                  | | T | T |
    |                       0-128K Bytes                     | | I | E |
@@ -20,6 +25,7 @@ Structure of a boot image (from https://docs.amd.com/v/u/en-US/ug1085-zynq-ultra
 
   Notes:
     1. The image may or may not be authenticated. The system verifies the authentication when TBD. The authentication tag is placed TBD
+         NOTE: The following in the Boot header is not authenticated: TBD
     2. The image may or may not be encrypted. The system verifies the encryption when the TBD eFUSE is set or when the boot header has a non-zero value in the Enc Status field. 
          IMPORTANT: If the Image is being encrypted, then the PMU and FSBL should NOT be in the same image. This will cause a re-use of the IV and AES Key (as they are encrypted individually) which will allow attackers to remove the key stream. If encrypting the FSBL, make sure the PMU FW is separate.
     3. The keys for authentication and encryption are stored in boot key register (decrypted from boot flash), eFuses, family key, operational key, PUF KEK, Key Update Register (KUP), or Battery-Backed Memory. The system expects TBD. Depending on eFUSE settings, The system first uses TBD
@@ -106,11 +112,11 @@ Fields:
 
 The partition header structure has the following structure:
 
-TBD
+TBD: Image Header Table, Image Headers, Partition Headers
 
 The PMU Firmware Image Blob has the following structure:
 
-TBD
+TBD: TODO (NOTE: This should not be included if encrypting the FSBL)
 
 The FSBL Image Blob has the following structure:
 
