@@ -1,4 +1,4 @@
-Structure of a boot image (from https://docs.amd.com/v/u/en-US/ug1085-zynq-ultrascale-trm):
+Structure of a boot image (from https://docs.amd.com/v/u/en-US/ug1085-zynq-ultrascale-trm Chapter 11):
 
    __________________________________________________________
    |                                                        |
@@ -32,7 +32,50 @@ Structure of a boot image (from https://docs.amd.com/v/u/en-US/ug1085-zynq-ultra
 
 The boot header has the following structure:
 
-TBD
+      | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | A | B | C | D | E | F |
+      _________________________________________________________________
+0x000 |                      Reserved For Interrupts                  |
+      |                                                               |
+0x010 |                                                               |
+      |_______________________________________________________________|
+0x020 |Width Detection| Image ID      | Enc Status    | FSBL Exec Addr|
+      |_______________|_______________|_______________|_______________|
+0x030 | Src Offset    |PMU FW Img Len |Tot PMU FW Len |FSBL Img Len   |
+      |_______________|_______________|_______________|_______________|
+0x040 |Tott FSBL Len  |Img Attributes | Hdr Checksum  | Obfuscated key|
+      |_______________|_______________|_______________|               |
+0x050 |                                                               |
+      |                               ________________________________|
+0x060 |                               | Reserved                      |
+      |_______________________________|_______________________________|
+0x070 | FSBL/User Defined                                             |
+      |                                                               |
+0x080 |                                                               |
+      |                                                               |
+0x090 |                                                               |
+      |_______________________________________________________________|
+0x0A0 | Secure Header IV                              | Obfuscated or |
+      |_______________________________________________|_______________|
+0x0B0 |black key IV (cont prev row)   |         Register Data         |
+      |_______________________________|                               |
+      |                                                               |
+                                    ...
+      |                                _______________________________|
+0x8B0 |                               | PUF Helper Data               |
+      |_______________________________|                               |
+      |                                                               |
+                                    ...                                
+      |               ________________________________________________|
+0xEC0 |               |
+      |_______________|
+
+Fields:
+1. Reserved for Interrupts - Used in XIP boot mode when the default 0x01F interrupt vectors are changed in the LQSPI address space
+2. Width Detection - Quad-SPI width description (TODO: Valid values?)
+3. Image ID - Boot image ID strong (must be "XLNX") (TODO double check this)
+4. Encryption Status - Identifies AES key source: 0x00000000, Unencrypted; 0x3A5C3C5A, Red Key BBRAM; 0xA35C7CA5, Obfuscated key in boot header; 0xA35C7C53, Black key in Boot header; 0xA5C3C5A3, Red key in eFuse; 0xA5C3C5A5, black key in eFuse (PUF key); 0xA5C3C5A7, eFuse (Gray key); 0xA3A5C3C5, user key (only used with single partition boot images). All other values are illegal
+5. FSBL Execution Address - FSBL execution start address (TODO: Valid values?)
+6. TODO
 
 The partition header structure has the following structure:
 
