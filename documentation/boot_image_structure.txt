@@ -69,15 +69,39 @@ The boot header has the following structure:
 0xEC0 |               |
       |_______________|
 
-NOTE: The PUF Helper Data is not taken into account for the 2232 byte length of the header
+NOTE: The PUF Helper Data is not taken into account for the 2232 byte length of the header. If the option gets set and this field is added, the header balloons to 3780 bytes in length.
 
 Fields:
 1. Reserved for Interrupts - Used in XIP boot mode when the default 0x01F interrupt vectors are changed in the LQSPI address space
 2. Width Detection - Quad-SPI width description (TODO: Valid values?)
 3. Image ID - Boot image ID strong (must be "XLNX") (TODO double check this)
-4. Encryption Status - Identifies AES key source: 0x00000000, Unencrypted; 0x3A5C3C5A, Red Key BBRAM; 0xA35C7CA5, Obfuscated key in boot header; 0xA35C7C53, Black key in Boot header; 0xA5C3C5A3, Red key in eFuse; 0xA5C3C5A5, black key in eFuse (PUF key); 0xA5C3C5A7, eFuse (Gray key); 0xA3A5C3C5, user key (only used with single partition boot images). All other values are illegal
+4. Encryption Status - Identifies AES key source: 0x00000000, Unencrypted; 0x3A5C3C5A, Red Key BBRAM; 0xA35C7CA5, Obfuscated key in boot header; 0xA35C7C53, Black key in Boot header; 0xA5C3C5A3, Red key in eFuse; 0xA5C3C5A5, black key in eFuse (PUF key); 0xA5C3C5A7, eFuse (Gray key); 0xA3A5C3C5, user key (only used with single partition boot images). All other values are illegal (TODO: what are these values in ASCII?) (does a value of non-zero automatically imply image is encrypted?)
 5. FSBL Execution Address - FSBL execution start address (TODO: Valid values?)
-6. TODO
+6. Source Offset - PMU FW and FSBL Source Start Address (TODO: Valid values? Does this value start correspond to the end of the partition headers?)
+7. PMU FW image length - PMU FW original image length
+8. Total PMU FW image length - PMU firmware image block size, AES key, AES IV, and GCM tag (in case of an encrypted image). This field size must be <= 128KB. (TODO: AES key? Is that saying the key is in the image?? What are all the possible combinations this could be computed?)
+9. FSBL image length - FSBL original image length
+10. Total FSBL image length - Total FSBL image length (TODO: Is this computed the same way as the PMUFW?)
+11. Image attributes - The Image attributes have the following 32 bit format:
+    Bits:  | 31 - 16  |  15 - 14 | 13 - 12     | 11 - 10    | 9 - 8          | 7 - 6           | 5 - 4             | 3 - 2  | 1 - 0    |
+           -----------------------------------------------------------------------------------------------------------------------------
+           | Reserved | Bhdr RSA | SHA2 Select | CPU Select | Hashing Select | PUF HD Location | Authenticate Only | OP Key | Reserved |
+           -----------------------------------------------------------------------------------------------------------------------------
+      11a. Bhdr RSA - 0x3 If the RSA_EN eFUSES are not programmed, RSA authentication of the boot image is done, excluding verification of PPK hash and SPK ID> If the RSA_EN eFUSES are programmed, then an error is generated. All others: RSA authentication is decided based on the RSA_EN eFUSEs
+      11b. SHA2 Select - 0x3 While doing RSA authentication, SHA2 is used in plkace of SHA3 (deprecated). All others" SHA3 is used while doing RSA authentication
+      11c. CPU Select - 0x0, R5 core 0 (?); 0x1, A53 singe 32 bit; 0x2, A53 single 64 bit; 0x3, R5 lockstep
+      11d. Hashing Select - 0x0,0x1, No Integrity; 0x2, SHA2 (deprecated); 0x3, SHA3. NOTE: If RSA_EN eFUSEs are programmed and this option is set, an error occurs.
+      11e. PUF HD location - 0x3 PUF HD is part of boot header. All others: PUF HD is in eFUSE
+      11f. Authenticate only - 0x3 Boot image is only RSA signed, do not decrypt the image even if Enc Status is non-zero. All others: Means if enc status is non-zero then decrypt the boot image.
+      11g. OP Key - 0x3 Secure header contains operational key for block 0 decryption. All others: Means that the root device key is used for block 0 decryption (TODO: block 0 of what?)
+12. Header Checksum - Checksum computed as the summing each 32 bit word and then computing the not of the final checksum. Run over 0x20 to 0x44 (TODO: always computed?)
+13. Obfuscated key - 256 bit obfuscated key. Only valid when Encryption status is 0xA35C7CA5
+14. Reserved
+15. FSBL/User defined - TODO: Get this for UG1137
+16. Secure header IV - IV for a secure header for both PMUFW and FSBL (does this imply they are encrypted separately? Would that imply they are are using the same key and same IV but different data?!?!?!? Or are the encrypted together as one "message"? Can they approach the depth of AES GCM?)
+17. Obfuscated or black key IV - IV for decrypting the obfuscated key (TODO: what really does this mean?)
+18. Register Initialization - Register write pairs for system register initialization (TODO: Get a list of these. What are legal writes? What are illegal? What are required? What are optional? Any sequences expected?)
+19. PUF Helper data = PUF Helper Data. Only valid when PUF HD location = 0x3 in image attributes
 
 The partition header structure has the following structure:
 
