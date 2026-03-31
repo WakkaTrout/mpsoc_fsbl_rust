@@ -1,4 +1,4 @@
-Structure of a boot image (from https://docs.amd.com/v/u/en-US/ug1085-zynq-ultrascale-trm Chapter 11 and Chapter 12):
+Structure of a boot image (from https://docs.amd.com/v/u/en-US/ug1085-zynq-ultrascale-trm Chapter 11 and Chapter 12 and https://docs.amd.com/r/en-US/ug1283-bootgen-user-guide/Zynq-UltraScale-MPSoC-Boot-Image):
 
    __________________________________________________________
    |                                                        | |   |
@@ -52,9 +52,9 @@ The boot header has the following structure:
 0x040 |Tott FSBL Len  |Img Attributes | Hdr Checksum  | Obfuscated key|
       |_______________|_______________|_______________|               |
 0x050 |                                                               |
-      |                               ________________________________|
-0x060 |                               | Reserved                      |
-      |_______________________________|_______________________________|
+      |                                                _______________|
+0x060 |                                                | Shutter Value|
+      |________________________________________________|______________|
 0x070 | FSBL/User Defined                                             |
       |                                                               |
 0x080 |                                                               |
@@ -79,12 +79,12 @@ The boot header has the following structure:
 NOTE: The PUF Helper Data is not taken into account for the 2232 byte length of the header. If the option gets set and this field is added, the header balloons to 3780 bytes in length.
 
 Fields:
-1. Reserved for Interrupts - Used in XIP boot mode when the default 0x01F interrupt vectors are changed in the LQSPI address space
-2. Width Detection - Quad-SPI width description (TODO: Valid values?)
-3. Image ID - Boot image ID strong (must be "XLNX") (TODO double check this)
-4. Encryption Status - Identifies AES key source: 0x00000000, Unencrypted; 0x3A5C3C5A, Red Key BBRAM; 0xA35C7CA5, Obfuscated key in boot header; 0xA35C7C53, Black key in Boot header; 0xA5C3C5A3, Red key in eFuse; 0xA5C3C5A5, black key in eFuse (PUF key); 0xA5C3C5A7, eFuse (Gray key); 0xA3A5C3C5, user key (only used with single partition boot images). All other values are illegal (TODO: what are these values in ASCII?) (does a value of non-zero automatically imply image is encrypted?)
-5. FSBL Execution Address - FSBL execution start address (TODO: Valid values?)
-6. Source Offset - PMU FW and FSBL Source Start Address (TODO: Valid values? Does this value start correspond to the end of the partition headers?)
+1. Reserved for Interrupts - Used in XIP boot mode when the default 0x01F interrupt vectors are changed in the LQSPI address space (0xEAFFFFFE for R5 and A53 32 bit and 0x14000000 A53 64-bit)
+2. Width Detection - Quad-SPI width description (must be 0xAA995566)
+3. Image ID - Boot image ID strong (must be "XLNX")
+4. Encryption Status - Identifies AES key source: 0x00000000, Unencrypted; 0x3A5C3C5A, Red Key BBRAM; 0xA35C7CA5, Obfuscated key in boot header; 0xA35C7C53, Black key in Boot header; 0xA5C3C5A3, Red key in eFuse; 0xA5C3C5A5, black key in eFuse (PUF key); 0xA5C3C5A7, eFuse (Gray key); 0xA3A5C3C5, user key (only used with single partition boot images). All other values are illegal (does a value of non-zero automatically imply image is encrypted?)
+5. FSBL Execution Address - FSBL execution start address or XIP base address (TODO: Valid values?)
+6. Source Offset - PMU FW offset (if present). Otherwise, FSBL Source Start Address (TODO: Valid values? Does this value start correspond to the end of the partition headers?)
 7. PMU FW image length - PMU FW original image length
 8. Total PMU FW image length - PMU firmware image block size, AES key, AES IV, and GCM tag (in case of an encrypted image). This field size must be <= 128KB. (TODO: AES key? Is that saying the key is in the image?? What are all the possible combinations this could be computed?)
 9. FSBL image length - FSBL original image length
@@ -103,8 +103,10 @@ Fields:
       11g. OP Key - 0x3 Secure header contains operational key for block 0 decryption. All others: Means that the root device key is used for block 0 decryption (TODO: block 0 of what?)
 12. Header Checksum - Checksum computed as the summing each 32 bit word and then computing the not of the final checksum. Run over 0x20 to 0x44 (TODO: always computed?)
 13. Obfuscated key - 256 bit obfuscated key. Only valid when Encryption status is 0xA35C7CA5
-14. Reserved
-15. FSBL/User defined - TODO: Get this for UG1137
+14. Shutter Value - 32 bit PUF_SHUT register value to configure PUF shutter offset time and shutter open time
+15. User/FSBL defined
+   15a. User Defined: 0x70 to 0x98 (not inluding 0x98)
+   15b. FSBL Defined: 0x98 Image Header Table Offset, 0x9C Partition Header Table Offset
 16. Secure header IV - IV for a secure header for both PMUFW and FSBL (does this imply they are encrypted separately? Would that imply they are are using the same key and same IV but different data?!?!?!? Or are the encrypted together as one "message"? Can they approach the depth of AES GCM?)
 17. Obfuscated or black key IV - IV for decrypting the obfuscated key (TODO: what really does this mean?)
 18. Register Initialization - Register write pairs for system register initialization (TODO: Get a list of these. What are legal writes? What are illegal? What are required? What are optional? Any sequences expected?)
@@ -113,6 +115,12 @@ Fields:
 The partition header structure has the following structure:
 
 TBD: Image Header Table, Image Headers, Partition Headers
+
+      | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | A | B | C | D | E | F |
+      _________________________________________________________________
+0x000 |                      Image Header Table                       |
+
+
 
 The PMU Firmware Image Blob has the following structure:
 
