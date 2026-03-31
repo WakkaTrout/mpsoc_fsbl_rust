@@ -69,6 +69,8 @@ The boot header has the following structure:
 0xEC0 |               |
       |_______________|
 
+NOTE: The PUF Helper Data is not taken into account for the 2232 byte length of the header
+
 Fields:
 1. Reserved for Interrupts - Used in XIP boot mode when the default 0x01F interrupt vectors are changed in the LQSPI address space
 2. Width Detection - Quad-SPI width description (TODO: Valid values?)
