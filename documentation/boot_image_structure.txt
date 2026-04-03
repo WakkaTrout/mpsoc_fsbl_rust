@@ -35,7 +35,8 @@ Structure of a boot image (from https://docs.amd.com/v/u/en-US/ug1085-zynq-ultra
     2. Are those authentication and encryption boxes correct?
     3. Can the PMU FW be loaded in a different file in addition to the boot image?
     4. Can a bitstream be put into the boot image? Or does it need to be in a different file format?
-    5. Is this file format used for additional stages that need to be loaded (e.g. U-Boot, Grub, etc.)
+    5. Is this file format used for additional stages that need to be loaded (e.g. U-Boot, Grub, etc.)?
+    6. Are there additional partitions after the FSBL?
 
 The boot header has the following structure:
 
@@ -95,7 +96,7 @@ The boot header has the following structure:
               | Reserved | Bhdr RSA | SHA2 Select | CPU Select | Hashing Select | PUF HD Location | Authenticate Only | OP Key | Reserved |
               -----------------------------------------------------------------------------------------------------------------------------
          11a. Bhdr RSA - 0x3 If the RSA_EN eFUSES are not programmed, RSA authentication of the boot image is done, excluding verification of PPK hash and SPK ID> If the RSA_EN eFUSES are programmed, then an error is generated. All others: RSA authentication is decided based on the RSA_EN eFUSEs
-         11b. SHA2 Select - 0x3 While doing RSA authentication, SHA2 is used in plkace of SHA3 (deprecated). All others" SHA3 is used while doing RSA authentication
+         11b. SHA2 Select - 0x3 While doing RSA authentication, SHA2 is used in place of SHA3 (deprecated). All others: SHA3 is used while doing RSA authentication
          11c. CPU Select - 0x0, R5 core 0 (?); 0x1, A53 singe 32 bit; 0x2, A53 single 64 bit; 0x3, R5 lockstep
          11d. Hashing Select - 0x0,0x1, No Integrity; 0x2, SHA2 (deprecated); 0x3, SHA3. NOTE: If RSA_EN eFUSEs are programmed and this option is set, an error occurs.
          11e. PUF HD location - 0x3 PUF HD is part of boot header. All others: PUF HD is in eFUSE
@@ -109,7 +110,7 @@ The boot header has the following structure:
       15b. FSBL Defined: 0x98 Image Header Table Offset, 0x9C Partition Header Table Offset
    16. Secure header IV - IV for a secure header for both PMUFW and FSBL (does this imply they are encrypted separately? Would that imply they are are using the same key and same IV but different data?!?!?!? Or are the encrypted together as one "message"? Can they approach the depth of AES GCM?)
    17. Obfuscated or black key IV - IV for decrypting the obfuscated key
-   18. Register Initialization - Register write pairs for system register initialization (TODO: Get a list of these. What are legal writes? What are illegal? What are required? What are optional? Any sequences expected?)
+   18. Register Initialization - Register write pairs for system register initialization (TODO: Get a list of these. What are legal writes? What are illegal? What are required? What are optional? Any sequences expected?) (Skipped registers have address 0xFFFFFFFF and unused ones should have value 0x0)
    19. PUF Helper data = PUF Helper Data. Only valid when PUF HD location = 0x3 in image attributes
 
 The partition header structure has the following structure:
@@ -171,9 +172,27 @@ The partition header structure has the following structure:
 0x0Y0 |                                                               |
       |_______________________________________________________________|
 
-   The Image header Table Structure:
-   TBD
+   The Image Header Table Structure:
+         | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | A | B | C | D | E | F |
+         _________________________________________________________________
+   0x000 |    Version    | Cnt of Img Hdr|Frst Partn Hdr |Frst Img Hdr   |
+         |_______________|_______________|_______________|_______________|
+   0x010 | Hdr Auth Cert | Scnd Boot Dev | Padding                       |
+         |_______________|_______________|                               |
+   0x020 |                                                               |
+         |                                               ________________|
+   0x030 |                                               |  Checksum     |
+         |_______________________________________________|_______________|
 
+         Fields:
+         1. Version: 0x01010000 (Hdr Cert Auth not existent), 0x01020000 (Hdr Cert Auth Exists), all other versions are currently illegal
+         2. Cnt Of Image Header: Number of image headers (TBD: legal ranges?)
+         3. Frst Partn Hdr: Pointer to first partition header (word offset (TBD: signed or unsigned?)) (Illegal if within this header, before this header, or past end of boot device, (TBD any other illegal values?))
+         4. Frst Img Hdr: Pointer to first image header (word offset (TBD: signed or unsigned?)) (Illegal if within this header, before this header, or past end of boot device, (TBD any other illegal values?))
+         5. Hdr Auth Cert: Pointer to header authentication certificate (word offset (TBD: signed or unsigned?)) (Illegal if within this header, before this header, or past end of boot device, (TBD any other illegal values?))
+         6. Scnd Boot Dev: Secondary boot device. Can take values: 0, Same boot device; 1, QSPI-32; 2, QSPI-24; 3,NAND; 4,SD0;  5,SD1; 6,SDLS; 7,EMMC/MMC; 8,USB; 9,ETHERNET; 10,PCIE; 11,SATA; All other undefined
+         7. Padding (must be all 0x0's)
+         8  Checksum (sum of all words in header (not including this one) and then negated)
    An Image Header Structure:
    TBD
 
