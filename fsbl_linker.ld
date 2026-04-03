@@ -26,9 +26,6 @@ ENTRY(_start)
 
 SECTIONS
 {
-    /* Starts at 0x80000 (common for AArch64 boot, should it be at a different address since we are booting out of OCM for an FSBL?) */
-    . = 0x80000;
-
     .text : {
         /* Ensure your startup assembly/code is at the very beginning */
         KEEP(*(.text._start))
