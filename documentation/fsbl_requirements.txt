@@ -27,14 +27,21 @@ Peripheral Initialization Requirements:
 8. The FSBL SHALL support being able to load a bitstream into the PL (on certain types of boots, which ones?) (is this bitstream packaged in the boot image or can it be from some other file?)
 9. The FSBL SHALL support being able to load the PMU FW into the PMU (on certain types of boots, which ones?) (is this bitstream packaged in the boot image or can it be from some other file?)
 
+TODO: What is the list of all peripherals that the FSBL is required to setup?
+
 Boot Image Format:
+TODO: Take the format of the boot image and splay it out as requirements
 
 FSBL Boot Image Layout Requirements:
+TODO: How must a boot image with the FSBL in it be setup (specifically)
 
 FSBL FSBL-Boot Image Requirements:
 1. The FSBL SHALL support authentication of FSBL images if boot header authentication is configured (how does this interact with what the CSU is already doing and how does this interact with multiboot?)
+TODO: How must the FSBL be able to load other FSBLs?
 
 Additional Partitions Boot Image Requirements:
+TODO: What must the FSBL do to load other partitions?
 
 Boot Device Requirements:
 1. The FSBL SHALL be able to load the next stage software from the following boot devices: USB, JTAG, QSPI (24 or 32 bit bus), NAND, SD Card, eMMC flash
+TODO: What is required of the FSBL to load next stage software from a boot device?
