@@ -110,7 +110,7 @@ The boot header has the following structure:
       15b. FSBL Defined: 0x98 Image Header Table Offset, 0x9C Partition Header Table Offset
    16. Secure header IV - IV for a secure header for both PMUFW and FSBL (does this imply they are encrypted separately? Would that imply they are are using the same key and same IV but different data?!?!?!? Or are the encrypted together as one "message"? Can they approach the depth of AES GCM?)
    17. Obfuscated or black key IV - IV for decrypting the obfuscated key
-   18. Register Initialization - Register write pairs for system register initialization (TODO: Get a list of these. What are legal writes? What are illegal? What are required? What are optional? Any sequences expected?) (Skipped registers have address 0xFFFFFFFF and unused ones should have value 0x0)
+   18. Register Initialization - Register write pairs for system register initialization (TODO: Get a list of these. What are legal writes? What are illegal? What are required? What are optional? Any sequences expected?) (Skipped registers have address 0xFFFFFFFF and unused ones should have value 0x0, really though it starts at the first address,value pair and loops through until it finds a 0xFFFFFFFF and then stops (two conflicting documents, which is the right behavior))
    19. PUF Helper data = PUF Helper Data. Only valid when PUF HD location = 0x3 in image attributes
 
 The partition header structure has the following structure:
