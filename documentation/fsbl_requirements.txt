@@ -1,27 +1,40 @@
+FSBL Core:
+1. The FSBL SHALL validate the consistency of the boot reason with the detected system state. (This is extremely vague, what does this mean?)
+2. The FSBL MAY support changing to a different boot image if it detects the current boot image is corrupted.
+    2.5 Additional Information. The intended way to accomplish this is to program the next boot image address into the multiboot header and then trigger a soft reset
+3. The FSBL SHALL clear the psonly_reset_req bit from the CRL_APB Reset Reason Register if a PS-only reboot occurred (reference https://docs.amd.com/r/en-US/ug1087-zynq-ultrascale-registers/RESET_REASON-CRL_APB-Register) (when should it clear it, only on success?)
+4. The FSBL SHALL load and handoff to either: a SSBL, directly to an OS, or a custom application
+5. The FSBL SHALL be able to run on any core of the A53 (both dual core and quad core variations) and any core of the R5 of the MPSoC
+6. The FSBL SHALL be able to run on the R5 in lockstep mode or on a single core when not in lockstep mode
+7. The FSBL SHALL be capable of supporting system warm-reboots (what does this mean really?)
+8. The FSBL SHALL support measuring itself and providing the CSU ROM Hash and its own hash to a FIP 140-2 external TPM (if configured)
+9. The FSBL SHALL support setting up the Hardware Watchdog (WDT) if configured
+10. The FSBL SHALL support running within a QEMU execution environment
+11. The FSBL SHALL support mutliboot, falling back to other FSBLs within a boot device on detected failures (TODO: this is vague, define what this means)
+12. The FSBL SHALL report errors on the error pins if execution fails (again, vague, define what this means a bit better)
+13. The FSBL SHALL setup the system exceptions on startup for the processor it is running on.
+14. The FSBL SHALL execute to completion within XX amount of time, where XX depends on the clock frequency of the processor it is executing on (Desire: want this to be as small as physically possible)
+15. The FSBL SHALL be able to correct itself if radiation mutates any of its internal state variables during execution
+
+Peripheral Initialization Requirements:
 1. The FSBL SHALL reset the CSU AES engine on all resets (Is this true?) if the system requires Hardware AES support.
 2. The FSBL SHALL reset the CSU SHA engine on all resets (Is this true?) if the system requires Hardware SHA support.
-3. The FSBL SHALL validate the consistency of the boot reason with the detected system state. (This is extremely vague, what does this mean?)
-4. The FSBL MAY support changing to a different boot image if it detects the current boot image is corrupted.
-    4 Additional Information. The intended way to accomplish this is to program the next boot image address into the multiboot header and then trigger a soft reset
-5. The FSBL SHALL clear the psonly_reset_req bit from the CRL_APB Reset Reason Register if a PS-only reboot occurred (reference https://docs.amd.com/r/en-US/ug1087-zynq-ultrascale-registers/RESET_REASON-CRL_APB-Register) (when should it clear it, only on success?)
-6. The FSBL SHALL initialize any attached DDR3/LPDDR3/DDR4/LPDDR4's.
-7. The FSBL SHALL load and handoff to either: a SSBL, directly to an OS, or a custom application
-8. The FSBL SHALL be able to run on any core of the A53 (both dual core and quad core variations) and any core of the R5 of the MPSoC
-9. The FSBL SHALL be able to run on the R5 in lockstep mode or on a single core when not in lockstep mode
-10. The FSBL SHALL be able to load the next stage software from the following boot devices: USB, JTAG, QSPI (24 or 32 bit bus), NAND, SD Card, eMMC flash
-11. The FSBL SHALL be capable of supporting system warm-reboots (what does this mean really?)
-12. The FSBL SHALL support measuring itself and providing the CSU ROM Hash and its own hash to a FIP 140-2 external TPM (if configured)
-13. The FSBL SHALL support reseting and setting up the PL if configured (should this include loading the bitstream as well?)
-14. The FSBL SHALL support setting up the Hardware Watchdog (WDT) if configured
-15. The FSBL SHALL support running within a QEMU execution environment
-16. The FSBL SHALL support initializing the R5 when the FSBL runs on the A53 if configured.
-17. The FSBL SHALL support setting up ECC on internal and attached memory devices if configured (this includes DDR's, R5's TCM, etc.)
-18. The FSBL SHALL support mutliboot, falling back to other FSBLs within a boot device on detected failures (TODO: this is vague, define what this means)
-19. The FSBL SHALL report errors on the error pins if execution fails (again, vague, define what this means a bit better)
-20. The FSBL SHALL support authentication of FSBL images if boot header authentication is configured (how does this interact with what the CSU is already doing and how does this interact with multiboot?)
-21. The FSBL SHALL setup the system exceptions on startup for the processor it is running on.
-22. The FSBL SHALL execute to completion within XX amount of time, where XX depends on the clock frequency of the processor it is executing on (Desire: want this to be as small as physically possible)
-23. The FSBL SHALL be able to correct itself if radiation mutates any of its internal state variables during execution
-24. The FSBL SHALL detect and report failures in initializing any peripherals it is configured to initialize
-25. The FSBL SHALL support being able to load a bitstream into the PL (on certain types of boots, which ones?) (is this bitstream packaged in the boot image or can it be from some other file?)
-26. The FSBL SHALL support being able to load the PMU FW into the PMU (on certain types of boots, which ones?) (is this bitstream packaged in the boot image or can it be from some other file?)
+3. The FSBL SHALL initialize any attached DDR3/LPDDR3/DDR4/LPDDR4's.
+4. The FSBL SHALL support initializing the R5 when the FSBL runs on the A53 if configured.
+5. The FSBL SHALL support setting up ECC on internal and attached memory devices if configured (this includes DDR's, R5's TCM, etc.)
+6. The FSBL SHALL detect and report failures in initializing any peripherals it is configured to initialize
+7. The FSBL SHALL support reseting and setting up the PL if configured (should this include loading the bitstream as well?)
+8. The FSBL SHALL support being able to load a bitstream into the PL (on certain types of boots, which ones?) (is this bitstream packaged in the boot image or can it be from some other file?)
+9. The FSBL SHALL support being able to load the PMU FW into the PMU (on certain types of boots, which ones?) (is this bitstream packaged in the boot image or can it be from some other file?)
+
+Boot Image Format:
+
+FSBL Boot Image Layout Requirements:
+
+FSBL FSBL-Boot Image Requirements:
+1. The FSBL SHALL support authentication of FSBL images if boot header authentication is configured (how does this interact with what the CSU is already doing and how does this interact with multiboot?)
+
+Additional Partitions Boot Image Requirements:
+
+Boot Device Requirements:
+1. The FSBL SHALL be able to load the next stage software from the following boot devices: USB, JTAG, QSPI (24 or 32 bit bus), NAND, SD Card, eMMC flash
