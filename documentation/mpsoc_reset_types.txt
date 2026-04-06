@@ -3,12 +3,12 @@ The following information has been gathered from https://docs.amd.com/v/u/en-US/
 This is written from the perspective from the FSBL and what it experiences due to the following resets.
 
 1. Software Debugger Reset
-    Description: Debugger wrote to BLOCKONLY_RST
+    Description: Debugger wrote to BLOCKONLY_RST register
     Components Reset:
     Components Preserved (including register subsets):
 
 2. Software System Reset (a.k.a soft reset)
-    Description: RESET_CTRL written to
+    Description: RESET_CTRL register written to
     Components Reset:
     Components Preserved (including register subsets):
 
@@ -23,12 +23,12 @@ This is written from the perspective from the FSBL and what it experiences due t
     Components Preserved (including register subsets):
 
 5. Internal System Reset
-    Description: Caused by a system error that can corrected by a reset
+    Description: Caused by a system error that can corrected by a reset (TODO: What is the list of errors that cause this?)
     Components Reset:
     Components Preserved (including register subsets):
 
 6. Internal POR
-    Description: Caused by a system error that can only be corrected by a POR reset
+    Description: Caused by a system error that can only be corrected by a POR reset (TODO: What is the list of errors that cause this?)
     Components Reset:
     Components Preserved (including register subsets):
 
