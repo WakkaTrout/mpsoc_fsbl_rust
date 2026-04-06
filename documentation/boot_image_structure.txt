@@ -30,8 +30,6 @@ Structure of a boot image (from https://docs.amd.com/v/u/en-US/ug1085-zynq-ultra
          IMPORTANT: If the Image is being encrypted, then the PMU and FSBL should NOT be in the same image. This will cause a re-use of the IV and AES Key (as they are encrypted individually) which will allow attackers to remove the key stream. If encrypting the FSBL, make sure the PMU FW is separate.
     3. The keys for authentication and encryption are stored in boot key register (decrypted from boot flash), eFuses, family key, operational key, PUF KEK, Key Update Register (KUP), or Battery-Backed Memory. The system expects TBD. Depending on eFUSE settings, The system first uses TBD
 
-   TODO: After Partition header, there is an optional Header Authentication Certificate Header. Should I put it in the image above or lump it together in the Partition Header Section?
-
    Questions
     1. Why are there those size restrictions? Does it have to do with OCM sizes? PMU RAM sizes? CSU RAM sizes? Hardcoded processor limits? Does it need to fit the full thing in to decrypt it placing a limit there?
     2. Are those authentication and encryption boxes correct?
@@ -39,6 +37,7 @@ Structure of a boot image (from https://docs.amd.com/v/u/en-US/ug1085-zynq-ultra
     4. Can a bitstream be put into the boot image? Or does it need to be in a different file format?
     5. Is this file format used for additional stages that need to be loaded (e.g. U-Boot, Grub, etc.)?
     6. Are there additional partitions after the FSBL?
+    7. The FSBL is in OCM, if it is running out of the A53 vs the R5, are there any different restrictions?
 
 The boot header has the following structure:
 
@@ -173,6 +172,12 @@ The partition header structure has the following structure:
       |                                                               |
 0x0Y0 |                                                               |
       |_______________________________________________________________|
+0x0W0 |               Authentication Certification Header             |
+      |                       (Optional)                              |
+0x0X0 |                                                               |
+      |                                                               |
+0x0Y0 |                                                               |
+      |_______________________________________________________________|
 
    The Image Header Table Structure:
          | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | A | B | C | D | E | F |
@@ -211,17 +216,141 @@ The partition header structure has the following structure:
       1. Nxt Img Hdr: Link to next Image Header. 0 if last Image Header (word offset) (TODO: Legal ranges?)
       2. Partition Hdr: Link to first associated Partition Header (word offset) (TODO: Legal ranges?)
       3. Reserved: Always 0
-      4. Image Name: Packed in big endian order 1 word at a time (so most likely need to 32-bit byte swap to reconstruct string on little endian machine). Must be 4 byte aligned
+      4. Image Name: Packed in big endian order 1 word at a time (so most likely need to 32-bit byte swap to reconstruct string on little endian machine). Must be 4 byte aligned (TODO: There must be some checks that the name is terminated somehow, maybe that the terminator appears within the memory device?)
       5. String Trmntr: String Terminator, must be 0x00000000
       6. Padding: Defaults to 0xFFFFFFFF to 64B boundary
 
    A Partition Header Structure:
-   TBD
+         | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | A | B | C | D | E | F |
+         _________________________________________________________________
+   0x000 | Enc Part Len  | Unenc Prt Len | Total Length  | Next Part Hdr |
+         |_______________|_______________|_______________|_______________|
+   0x010 | Dest Exec Lo  | Dest Exec HI  | Dest Load Lo  | Dest Load HI  |
+         |_______________|_______________|_______________|_______________|
+   0x020 | Actual Prt Off| Attributes    | Section Cnt   | Chcksum Offset|
+         |_______________|_______________|_______________|_______________|
+   0x030 | Img Hdr Offset| AC Offset     | Partition ID  | Hdr Checksum  |
+         |_______________|_______________|_______________|_______________|
+      Fields:
+      1. Enc Part Len: Encrypted Partition Data length (TODO: Legal Values?)
+      2. Unenc Prt Len: Unencrypted data length (TODO: Legal Values?)
+      3. Total Length: The total encrypted + padding + expansion + authentication length (what does it mean by expansion? And is the authentication length the AC header length that is after the partition?) (TODO: Legal values)
+      4. Next Part Hdr: Location of next parition header (word offset) (TODO: Legal values)
+      5. Dest Exec Lo: The lower 32-bits of executable address of this partition after loading. (TODO: Legal values?) (is this where the text section starts in the image? Is this some other address specific to the target processor running it?)
+      6. Dest Exec HI: The higher 32-bits of executable address of this partition after loading. (TODO: Legal values?) 
+      7. Dest Load Lo: The lower 32-bits of RAM address into which this partition is to be loaded. (TODO: Legal values?)  (Is this the start of the image versus the start of the text section in the previous values?)
+      8. Dest Load HI: The higher 32-bits of RAM address into which this partition is to be loaded. (TODO: Legal values?)
+      9. Actual Prt Off: The postion of the partition data relative to the start of the boot image. (word offset) (TODO: Legal values?)
+      10. Attributes:
+       Bits:  | 31 - 24  |  23             | 22 - 20  | 19            | 18         | 17 - 16         | 15                                     | 14 - 12       | 11 - 8          | 7                  | 6 - 4              | 3              | 2 - 1           | 0         |
+              ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+              | Reserved | Vector Location | Reserved | Early Handoff | Endianness | Partition Owner | RSA Authentication Certificate present | Checksum Type | Destination CPU | Encryption Present | Destination Device | A5X Exec State | Exception Level | Trustzone |
+              ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+         10a. Vector Location - Location of exception vector. 0:LOVEC (default); 1:HIVEC; (TODO: Any restrictions on when this can be high vs low?)
+         10b. Early Handoff - Handoff immediately after loading: 0:No Early Handoff; 1:Early Handoff Enabled. (TODO: When is this legal and when is it not?)
+         10c. Endianness: 0:Little Endian; 1:Big Endian; (TODO: Do all processors that this can be loaded onto support both endiannesses?)
+         10d. Parition Owner: 0:FSBL; 1:U-Boot; 2 and 3: Reserved; (TODO: What should the FSBL do when it encounters a U-boot partition? Ignore it? Validate its headers?)
+         10e. RSA Authentication Certificate present: 0: No RSA Authentication Certificate; 1: RSA Authentication Certificate (TODO: What is the consistency and validity of this when eFUSES are burned?)
+         10f. Checksum Type: 0:None; 1-2:Reserved; 3:SHA3; 4-7: Reserved. (TODO: What is the consistency and validity of this when eFUSES are burned?)
+         10g. Destination CPU: 0:None (indicates same as current one); 1:A53-0; 2:A53-1; 3:A53-2; 4:A53-3; 5:R5-0; 6:R5-1; 7: R5-lockstep; 8: PMU; 9-15: Reserved; (TODO: Any restrictions on what is allowed when FSBL is running on one of them? Any validation with name of partition vs processor? What if two partitions are being loaded onto the same processor? What should be done if a partition is not being loaded onto a processor (leave it off?) What if a system does not have all 4 A53 cores?)
+         10h. Encryption Present: 0,Not Encrypted; 1,Encrypted; (TODO: What is the consistency and validity of this when eFUSES are burned?)
+         10i. Destination Device: 0:None (indicates same as current one); 1:PS; 2:PL; 3-15:Reserved; (TODO: What is the consistency of this with Destination CPU?)
+         10j. A5X Exec State: 0:AARCH64 (default); 1:AARCH32; (TODO: Consistency with currently running FSBL if it is on the A53? Assume this field is ignored or needs to be a fixed value for PL and R5)
+         10k. Exception level: 0:EL0; 1:EL1; 2:EL2; 3:EL3; (TODO: Any restrictions due to eFUSEs? Any other restrictions due to which processor things are being run on? Does PL have exception levels?)
+         10m. Trustzone: 0:Non-secure; 1:Secure; (TODO: Is this just for the A53? R5? Not PL?)
+      11. Section Cnt: The number of sections associated with this parition (TODO: Legal values? Consistency with anything else?)
+      12. Chcksum Offset: The location of the checksum table in the boot image. (word offset) (TODO: Legal Values?)
+      13. Img Hdr Offset: The location of the corresponding image header in the boot image. (word offset) (TODO: Legal Values?)
+      14. AC Offset: The location of the corresponding Authentication Certificate in the boot image, if present (word offset) (TODO: Legal Values?)
+      15. Partition ID: Partition ID. (TODO: Legal Values?)
+      16. Hdr Checksum: sum of all words in header (not including this one) and then negated. Checksum must match, otherwise, invalid
+
+   An Authentication Certification Structure:
+         | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | A | B | C | D | E | F |
+         _________________________________________________________________
+   0x000 | Auth Hdr      | SPK ID        | UDF                           |
+         |_______________|_______________|                               |
+   0x010 |                                                               |
+         |                                                               |
+   0x020 |                                                               |
+         |                                                               |
+   0x030 |                                                               |
+         |_______________________________________________________________|
+   0x040 | PPK (mod 512)                                                 |
+         |                                                               |
+                                       ...
+   0x230 |                                                               |
+         |_______________________________________________________________|
+   0x240 | PPK (mod ext 512)                                             |
+         |                                                               |
+                                       ...
+   0x430 |                                                               |
+         |_______________________________________________________________|
+   0x440 | PPK Exponent  | Padding                                       |
+         |_______________|                                               |
+   0x450 |                                                               |
+         |                                                               |
+   0x460 |                                                               |
+         |                                                               |
+   0x470 |                                                               |
+         |_______________________________________________________________|
+   0x480 | SPK (mod 512)                                                 |
+         |                                                               |
+                                       ...
+   0x670 |                                                               |
+         |_______________________________________________________________|
+   0x680 | SPK (mod ext 512)                                             |
+         |                                                               |
+                                       ...
+   0x870 |                                                               |
+         |_______________________________________________________________|
+   0x880 | PPK Exponent  | Padding                                       |
+         |_______________|                                               |
+   0x890 |                                                               |
+         |                                                               |
+   0x8A0 |                                                               |
+         |                                                               |
+   0x8B0 |                                                               |
+         |_______________________________________________________________|
+   0x8C0 | SPK Signature                                                 |
+         |                                                               |
+                                       ...
+   0xAB0 |                                                               |
+         |_______________________________________________________________|
+   0xAC0 | Boot Header Signature                                         |
+         |                                                               |
+                                       ...
+   0xCB0 |                                                               |
+         |_______________________________________________________________|
+   0xCC0 | Partition Signature                                           |
+         |                                                               |
+                                       ...
+   0xEB0 |                                                               |
+         |_______________________________________________________________|
+
+      Fields:
+      1. Auth Hdr:
+       Bits:  | 31 - 20  |  19 - 18              | 17 - 16        | 15 - 14                           | 13 - 12                            | 11           | 10 - 9         | 8          | 7 - 4           | 3 - 2          | 1 - 0            |
+              ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+              | Reserved | SPK/User EFuse Select | PPK Key Select | Authentication Certificate Format | Authentication Certificate Version | PPK Key Type | PPK Key Source | SPK Enable | Public Strength | Hash Algorithm | Public Algorithm |
+              ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+         1a. SPK/User EFuse Select: 01:SPK eFuse; 10:User eFuse; (TODO: Legal Values? Consistency with other eFuses?)
+         1b. TODO
+
+      TODO
 
 The PMU Firmware Image Blob has the following structure (Should not be included if encrypting the FSBL):
 
 TBD: TODO (NOTE: This should not be included if encrypting the FSBL)
 
 The FSBL Image Blob has the following structure:
+
+TBD
+
+Secure header structure:
+
+TBD
+
+Additional Partitions:
 
 TBD
