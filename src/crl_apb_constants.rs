@@ -191,3 +191,12 @@ pub fn crl_apb_get_reset_reason() -> u32 {
     }
     return reset_reason;
 }
+
+#[inline(always)]
+pub fn crl_apb_get_user_boot_mode() -> u32 {
+    let boot_mode : u32;
+    unsafe {
+        boot_mode = crl_apb_reg_read(CRL_APB_BOOT_MODE_USER_REG_OFFSET);
+    }
+    return boot_mode;
+}
