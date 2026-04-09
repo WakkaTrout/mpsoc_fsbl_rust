@@ -38,6 +38,7 @@ Structure of a boot image (from https://docs.amd.com/v/u/en-US/ug1085-zynq-ultra
     5. Is this file format used for additional stages that need to be loaded (e.g. U-Boot, Grub, etc.)?
     6. Are there additional partitions after the FSBL?
     7. The FSBL is in OCM, if it is running out of the A53 vs the R5, are there any different restrictions?
+    8. When the FSBL goes to load the boot image from the boot device, does it pull it into OCM, DDR (after initialization), or does it DMA it directly out of the boot device? What are the differences between encrypted vs non-encrypted?
 
 The boot header has the following structure:
 
