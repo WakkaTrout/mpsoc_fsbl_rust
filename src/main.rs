@@ -8,12 +8,11 @@ mod crl_apb_constants;
 use crl_apb_constants::*;
 
 // This assembly runs first and sets up the stack pointer
-// TODO: Does the startup Assembly need to change between an A53 core, R5 core, or R5 lockstep?
 global_asm!(
     ".section .text._start",
     ".global _start",
     "_start:",
-    "  mov x0, #0x80000", // Example: set stack pointer below code
+    "  mov x0, #0x80000", // TODO: Change this to use stack pointer from linker script
     "  mov sp, x0",
     "  bl main"           // Jump to our Rust main
 );
@@ -25,6 +24,7 @@ pub extern "C" fn main() -> ! {
     csu_sha_engine_reset();
 
     let system_reset_reason : u32 = crl_apb_get_reset_reason();
+    let boot_mode : u32 = crl_apb_get_user_boot_mode();
     loop {}
 }
 
