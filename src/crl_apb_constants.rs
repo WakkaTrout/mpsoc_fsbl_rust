@@ -152,6 +152,13 @@ pub const CRL_APB_BANK3_STATUS_REG_OFFSET       : u32 = 0x00000288;
 
 // CRL APB Register Constants
 
+pub const CRL_APB_BOOT_MODE_USER_ALT_BOOT_MODE_MASK  : u32 = 0x0000F000;
+pub const CRL_APB_BOOT_MODE_USER_ALT_BOOT_MODE_OFF   : u32 = 12;
+pub const CRL_APB_BOOT_MODE_USER_USE_ALT_MASK        : u32 = 0x00000100;
+pub const CRL_APB_BOOT_MODE_USER_USE_ALT_OFF         : u32 = 8;
+pub const CRL_APB_BOOT_MODE_USER_BOOT_MODE_MASK      : u32 = 0x0000000F;
+pub const CRL_APB_BOOT_MODE_USER_BOOT_MODE_OFF       : u32 = 0;
+
 pub const CRL_APB_RESET_REASON_DEBUG_SYS_MASK        : u32 = 0x00000040; // Software Debugger Reset
 pub const CRL_APB_RESET_REASON_DEBUG_SYS_OFF         : u32 = 6;
 pub const CRL_APB_RESET_REASON_SOFT_MASK             : u32 = 0x00000020; // Soft Reset
@@ -168,7 +175,7 @@ pub const CRL_APB_RESET_REASON_EXTERNAL_POR_MASK     : u32 = 0x00000001; // Exte
 pub const CRL_APB_RESET_REASON_EXTERNAL_POR_OFF      : u32 = 0;
 
 #[inline(always)]
-pub unsafe fn crl_apb_reg_write(reg: u32, val: u32) {
+pub unsafe fn crl_apb_reg_write(reg: u32, val: u32) -> () {
     let crl_apb_reg : *mut u32 = (reg + CRL_APB_REG_BASEADDRESS) as *mut u32;
     unsafe {
         crl_apb_reg.write_volatile(val);
@@ -198,5 +205,22 @@ pub fn crl_apb_get_user_boot_mode() -> u32 {
     unsafe {
         boot_mode = crl_apb_reg_read(CRL_APB_BOOT_MODE_USER_REG_OFFSET);
     }
-    return boot_mode;
+    return (boot_mode & CRL_APB_BOOT_MODE_USER_BOOT_MODE_MASK) >> CRL_APB_BOOT_MODE_USER_BOOT_MODE_OFF;
+}
+
+#[inline(always)]
+pub fn crl_apb_set_user_alt_boot_mode( mode : u32 ) -> () {
+    let mut user_boot_mode_reg : u32;
+    // Read out the current value
+    unsafe {
+        user_boot_mode_reg = crl_apb_reg_read(CRL_APB_BOOT_MODE_USER_REG_OFFSET);
+    }
+    // clear out the old alt boot mode
+    user_boot_mode_reg = user_boot_mode_reg & !(CRL_APB_BOOT_MODE_USER_ALT_BOOT_MODE_MASK);
+    // Set the new one
+    user_boot_mode_reg = user_boot_mode_reg | ( mode << CRL_APB_BOOT_MODE_USER_ALT_BOOT_MODE_OFF);
+    // Write it back in
+    unsafe {
+        crl_apb_reg_write(CRL_APB_BOOT_MODE_USER_REG_OFFSET, user_boot_mode_reg);
+    }
 }
