@@ -25,9 +25,9 @@ pub extern "C" fn main() -> ! {
 
     let system_reset_reason : u32 = crl_apb_get_reset_reason();
     let boot_mode : BootMode = crl_apb_get_user_boot_mode();
-    if boot_mode != BootMode::JtagBootMode
+    if boot_mode != BootMode::Jtag
     {
-        crl_apb_set_user_alt_boot_mode(BootMode::JtagBootMode);
+        crl_apb_set_user_alt_boot_mode(BootMode::Jtag);
     }
     loop {}
 }
