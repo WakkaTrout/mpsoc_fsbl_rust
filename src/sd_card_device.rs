@@ -27,3 +27,7 @@ pub fn sd_card_async_write(address : u64, bytes_to_read: u64, buffer:&mut [u8]) 
 pub fn sd_card_async_write_complete() -> bool {
     //TODO How do we talk to the SD card from an MPSoC?
 }
+
+pub fn sd_check_fat_partition() {
+    // TODO We plan to support FAT partitions. Maybe we want to be able to detect and see if it is something other than FAT too?
+}
