@@ -162,16 +162,16 @@ pub const CRL_APB_BOOT_MODE_USER_BOOT_MODE_OFF       : u32 = 0;
 #[repr(u8)]
 #[derive(PartialEq)]
 pub enum BootMode {
-    JtagBootMode   = 0,
-    Qspi24BootMode = 1,
-    Qspi32BootMode = 2,
-    Sd0BootMode = 3,
-    NandBootMode = 4,
-    Sd1BootMode = 5,
-    EmmcBootMode = 6,
-    UsbBootMode = 7,
-    Sd1LSBootMode = 14,
-    UndefinedBootMode = 255
+    Jtag   = 0,
+    Qspi24 = 1,
+    Qspi32 = 2,
+    Sd0 = 3,
+    Nand = 4,
+    Sd1 = 5,
+    Emmc = 6,
+    Usb = 7,
+    Sd1LS = 14,
+    Undefined = 255
 }
 
 pub const CRL_APB_RESET_REASON_DEBUG_SYS_MASK        : u32 = 0x00000040; // Software Debugger Reset
@@ -190,7 +190,7 @@ pub const CRL_APB_RESET_REASON_EXTERNAL_POR_MASK     : u32 = 0x00000001; // Exte
 pub const CRL_APB_RESET_REASON_EXTERNAL_POR_OFF      : u32 = 0;
 
 #[inline(always)]
-pub unsafe fn crl_apb_reg_write(reg: u32, val: u32) -> () {
+pub unsafe fn crl_apb_reg_write(reg: u32, val: u32) {
     let crl_apb_reg : *mut u32 = (reg + CRL_APB_REG_BASEADDRESS) as *mut u32;
     unsafe {
         crl_apb_reg.write_volatile(val);
@@ -201,7 +201,7 @@ pub unsafe fn crl_apb_reg_write(reg: u32, val: u32) -> () {
 pub unsafe fn crl_apb_reg_read(reg: u32) -> u32 {
     let crl_apb_reg : *mut u32 = (reg + CRL_APB_REG_BASEADDRESS) as *mut u32;
     unsafe {
-        return crl_apb_reg.read_volatile();
+        crl_apb_reg.read_volatile()
     }
 }
 
@@ -211,7 +211,7 @@ pub fn crl_apb_get_reset_reason() -> u32 {
     unsafe {
         reset_reason = crl_apb_reg_read(CRL_APB_RESET_REASON_REG_OFFSET);
     }
-    return reset_reason;
+    reset_reason
 }
 
 #[inline(always)]
@@ -222,31 +222,31 @@ pub fn crl_apb_get_user_boot_mode() -> BootMode {
     }
     match (boot_mode & CRL_APB_BOOT_MODE_USER_BOOT_MODE_MASK) >> CRL_APB_BOOT_MODE_USER_BOOT_MODE_OFF
     {
-        0=> BootMode::JtagBootMode,
-        1=> BootMode::Qspi24BootMode,
-        2=> BootMode::Qspi32BootMode,
-        3=> BootMode::Sd0BootMode,
-        4=> BootMode::NandBootMode,
-        5=> BootMode::Sd1BootMode,
-        6=> BootMode::EmmcBootMode,
-        7=> BootMode::UsbBootMode,
-        14=> BootMode::Sd1LSBootMode,
-        _=> BootMode::UndefinedBootMode
+        0=> BootMode::Jtag,
+        1=> BootMode::Qspi24,
+        2=> BootMode::Qspi32,
+        3=> BootMode::Sd0,
+        4=> BootMode::Nand,
+        5=> BootMode::Sd1,
+        6=> BootMode::Emmc,
+        7=> BootMode::Usb,
+        14=> BootMode::Sd1LS,
+        _=> BootMode::Undefined
     }
 }
 
 // Sets the alt boot mode to mode and configures the register to boot from it
 #[inline(always)]
-pub fn crl_apb_set_user_alt_boot_mode( mode : BootMode ) -> () {
+pub fn crl_apb_set_user_alt_boot_mode( mode : BootMode ) {
     let mut user_boot_mode_reg : u32;
     // Read out the current value
     unsafe {
         user_boot_mode_reg = crl_apb_reg_read(CRL_APB_BOOT_MODE_USER_REG_OFFSET);
     }
     // clear out the old alt boot mode
-    user_boot_mode_reg = user_boot_mode_reg & !(CRL_APB_BOOT_MODE_USER_ALT_BOOT_MODE_MASK);
+    user_boot_mode_reg &= !(CRL_APB_BOOT_MODE_USER_ALT_BOOT_MODE_MASK);
     // Set the new one as well as the use alt bit
-    user_boot_mode_reg = user_boot_mode_reg | ( ( mode as u32 ) << CRL_APB_BOOT_MODE_USER_ALT_BOOT_MODE_OFF) | CRL_APB_BOOT_MODE_USER_USE_ALT_MASK;
+    user_boot_mode_reg |= ( ( mode as u32 ) << CRL_APB_BOOT_MODE_USER_ALT_BOOT_MODE_OFF) | CRL_APB_BOOT_MODE_USER_USE_ALT_MASK;
     // Write it back in
     unsafe {
         crl_apb_reg_write(CRL_APB_BOOT_MODE_USER_REG_OFFSET, user_boot_mode_reg);
