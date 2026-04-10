@@ -62,3 +62,36 @@ const SDIO_REG_PRESETVALUE7_REG_OFFSET                     : u32 = 0x0000006E;
 const SDIO_REG_BOOTTIMEOUTCNT_REG_OFFSET                   : u32 = 0x00000070;
 const SDIO_REG_SLOTINTRSTS_REG_OFFSET                      : u32 = 0x000000FC;
 const SDIO_REG_HOSTCONTROLLERVER_REG_OFFSET                : u32 = 0x000000FE;
+
+
+#[repr(u8)]
+#[derive(PartialEq)]
+pub enum SDCardId {
+    SD0 = 0,
+    SD1 = 1,
+}
+
+#[inline(always)]
+pub unsafe fn sdio_reg_write(sd_card_id : SDCardId, reg: u32, val: u32) -> () {
+    let sdio_reg : *mut u32 = (SD0_CONF_REG_BASEADDRESS + ( (sd_card_id as u32) << 16 ) + reg) as *mut u32;
+    unsafe {
+        sdio_reg.write_volatile(val);
+    }
+}
+
+#[inline(always)]
+pub unsafe fn sdio_reg_read_u16(sd_card_id : SDCardId, reg: u32) -> u16 {
+    let sdio_reg : *mut u16 = (SD0_CONF_REG_BASEADDRESS + ( (sd_card_id as u32) << 16 ) + reg) as *mut u16;
+    unsafe {
+        return sdio_reg.read_volatile();
+    }
+}
+
+#[inline(always)]
+pub fn sdio_get_cntrlr_vers(sd_card_id : SDCardId) -> u16 {
+    let cntrl_vers: u16;
+    unsafe{
+       cntrl_vers = sdio_reg_read_u16(SDIO_REG_HOSTCONTROLLERVER_REG_OFFSET);
+    }
+    return cntrl_vers;
+}
