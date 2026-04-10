@@ -25,6 +25,10 @@ pub extern "C" fn main() -> ! {
 
     let system_reset_reason : u32 = crl_apb_get_reset_reason();
     let boot_mode : u32 = crl_apb_get_user_boot_mode();
+    if boot_mode != 0
+    {
+        crl_apb_set_user_alt_boot_mode(0);
+    }
     loop {}
 }
 
