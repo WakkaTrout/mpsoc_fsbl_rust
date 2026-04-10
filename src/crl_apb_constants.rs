@@ -208,6 +208,7 @@ pub fn crl_apb_get_user_boot_mode() -> u32 {
     return (boot_mode & CRL_APB_BOOT_MODE_USER_BOOT_MODE_MASK) >> CRL_APB_BOOT_MODE_USER_BOOT_MODE_OFF;
 }
 
+// Sets the alt boot mode to mode and configures the register to boot from it
 #[inline(always)]
 pub fn crl_apb_set_user_alt_boot_mode( mode : u32 ) -> () {
     let mut user_boot_mode_reg : u32;
@@ -217,8 +218,8 @@ pub fn crl_apb_set_user_alt_boot_mode( mode : u32 ) -> () {
     }
     // clear out the old alt boot mode
     user_boot_mode_reg = user_boot_mode_reg & !(CRL_APB_BOOT_MODE_USER_ALT_BOOT_MODE_MASK);
-    // Set the new one
-    user_boot_mode_reg = user_boot_mode_reg | ( mode << CRL_APB_BOOT_MODE_USER_ALT_BOOT_MODE_OFF);
+    // Set the new one as well as the use alt bit
+    user_boot_mode_reg = user_boot_mode_reg | ( mode << CRL_APB_BOOT_MODE_USER_ALT_BOOT_MODE_OFF) | CRL_APB_BOOT_MODE_USER_USE_ALT_MASK;
     // Write it back in
     unsafe {
         crl_apb_reg_write(CRL_APB_BOOT_MODE_USER_REG_OFFSET, user_boot_mode_reg);
