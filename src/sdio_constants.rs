@@ -350,12 +350,10 @@ pub fn sdio_set_clk_cntrl_default(sd_card_id : SDCardId, capabilities : u64) {
     }
 }
 
-/* 
-#[inline(always)]
-pub fn sdio_perform_dma_read(sd_card_id : SDCardId, ) {
-    let cntrl_vers: u16;
+
+pub fn sdio_set_adma2_default(sd_card_id : SDCardId) {
+    const DEFAULT_DMA_SETTINGS : u8 = 0x10; // TODO: Look at this more to see if we can improve this to 64-bit ADMA2 mode. Probably cannot enable 4-bit or highspeed mode as this is controller initialization (and we want to be able to use the DMA to talk to the card to learn its capabilities)
     unsafe{
-       cntrl_vers = sdio_reg_read_u16(sd_card_id, SDIO_REG_HOSTCONTROLLERVER_REG_OFFSET);
+        sdio_reg_write_u8(sd_card_id, SDIO_REG_HOSTCONTROL1_REG_OFFSET, DEFAULT_DMA_SETTINGS);
     }
-    return cntrl_vers;
-}*/
+}
