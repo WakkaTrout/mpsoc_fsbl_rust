@@ -8,11 +8,19 @@ pub fn sd_card_initialize(sd_card_id : SDCardId) {
 
     // Setup the SD Card Controller on the MPSoC
     // TODO: Are we sure we should do this everytime we boot? Should there be cases we do not do this for warm boots?
-    //       Is there ever a case we want to do a partial reset?
+    //       Is there ever a case we want to do a partial reset? What is the state of the peripheral when we come out of each reset type?
+    //       Can we ever come up with the sd card in an inconsistent state?
     sdio_software_reset_all(sd_card_id);
     // TODO timeout
-    // TODO: How long does this take? Should we go do something else while this is resetting and then comeback?
-    while !sdio_all_in_reset(sd_card_id) {}
+    // TODO: How long does this take? Should we go do something else while this is resetting and then comeback? Is it even worth it?
+    while sdio_all_in_reset(sd_card_id) {}
+
+    let dev_capabilities : u64 = sdio_read_capabilities(sd_card_id); // only valid once not in reset (MPSoC Controllers are expected to have capabilities 0x280737EC6481, but unsure if there is a hardware configuration that can change this)
+
+    sdio_set_power_cntrl_default(sd_card_id);
+    sdio_set_clk_cntrl_default(sd_card_id); // This function may take awhile, we might be able to start something else while this finishes
+
+    // Does the above match what is required in the specification? Physical Layer Simplified Specification Version 9.10
 
 
 
