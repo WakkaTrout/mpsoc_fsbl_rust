@@ -6,6 +6,11 @@ mod csu_constants;
 use csu_constants::*;
 mod crl_apb_constants;
 use crl_apb_constants::*;
+mod sd_card_device;
+use sd_card_device::*;
+mod sdio_constants;
+use sdio_constants::*;
+
 
 // This assembly runs first and sets up the stack pointer
 global_asm!(
@@ -25,9 +30,12 @@ pub extern "C" fn main() -> ! {
 
     let system_reset_reason : u32 = crl_apb_get_reset_reason();
     let boot_mode : BootMode = crl_apb_get_user_boot_mode();
-    if boot_mode != BootMode::Jtag
+    if boot_mode == BootMode::Sd0
     {
-        crl_apb_set_user_alt_boot_mode(BootMode::Jtag);
+        // TODO: Here to verify this function works. In reality though alt boot mode
+        //       will come from the boot.bin file or by resetting to what is in the POR
+        crl_apb_set_user_alt_boot_mode(BootMode::Sd1);
+        sd_card_initialize(SDCardId::SD0);
     }
     loop {}
 }
