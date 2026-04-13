@@ -37,6 +37,8 @@ pub extern "C" fn main() -> ! {
         crl_apb_set_user_alt_boot_mode(BootMode::Sd1);
         sd_card_initialize(SDCardId::SD0);
     }
+    // TODO: Do we need to initialize all memory controllers? What is the expectation? Any power savings if we do not? Any time savings if we do them all here (instead of the SSBL)?
+    // TODO: We probably want to support a low-power FSBL vs a boot really fast (and can consume as much power as it wants) FSBL
     loop {}
 }
 
