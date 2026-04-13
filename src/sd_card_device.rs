@@ -3,8 +3,13 @@ use crate::sdio_constants::*;
 // Initialize, Read, and Write Utilities for an SD Card
 
 pub fn sd_card_initialize(sd_card_id : SDCardId) {
+    // Check that we are running with a SDHC version 1.0 and a SD Host Spec V3 as those are the only supported ones
+    let cntrlr_vers: u16 = sdio_get_cntrlr_vers(sd_card_id);
+    if cntrlr_vers != 0x1002 {
+        // TODO Error?
+        return
+    }
     // The following are the steps from the TRM
-
 
     // Setup the SD Card Controller on the MPSoC
     // TODO: Are we sure we should do this everytime we boot? Should there be cases we do not do this for warm boots?
