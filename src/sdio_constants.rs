@@ -63,17 +63,67 @@ const SDIO_REG_BOOTTIMEOUTCNT_REG_OFFSET                   : u32 = 0x00000070;
 const SDIO_REG_SLOTINTRSTS_REG_OFFSET                      : u32 = 0x000000FC;
 const SDIO_REG_HOSTCONTROLLERVER_REG_OFFSET                : u32 = 0x000000FE;
 
+// Register constants
+
+const SDIO_REG_SOFTWARERESET_SWRESET_FOR_DAT_MASK          : u8 = 0x4;
+const SDIO_REG_SOFTWARERESET_SWRESET_FOR_DAT_OFF           : u8 = 2;
+const SDIO_REG_SOFTWARERESET_SWRESET_FOR_CMD_MASK          : u8 = 0x2;
+const SDIO_REG_SOFTWARERESET_SWRESET_FOR_CMD_OFF           : u8 = 1;
+const SDIO_REG_SOFTWARERESET_SWRESET_FOR_ALL_MASK          : u8 = 0x1;
+const SDIO_REG_SOFTWARERESET_SWRESET_FOR_ALL_OFF           : u8 = 0;
 
 #[repr(u8)]
 #[derive(PartialEq)]
+#[derive(Clone)]
+#[derive(Copy)]
 pub enum SDCardId {
     SD0 = 0,
     SD1 = 1,
 }
 
 #[inline(always)]
-pub unsafe fn sdio_reg_write(sd_card_id : SDCardId, reg: u32, val: u32) -> () {
+pub unsafe fn sdio_reg_write_u32(sd_card_id : SDCardId, reg: u32, val: u32) -> () {
     let sdio_reg : *mut u32 = (SD0_CONF_REG_BASEADDRESS + ( (sd_card_id as u32) << 16 ) + reg) as *mut u32;
+    unsafe {
+        sdio_reg.write_volatile(val);
+    }
+}
+
+#[inline(always)]
+pub unsafe fn sdio0_reg_write_u32(reg: u32, val: u32) -> () {
+    let sdio_reg : *mut u32 = (SD0_CONF_REG_BASEADDRESS + reg) as *mut u32;
+    unsafe {
+        sdio_reg.write_volatile(val);
+    }
+}
+
+#[inline(always)]
+pub unsafe fn sdio1_reg_write_u32(reg: u32, val: u32) -> () {
+    let sdio_reg : *mut u32 = (SD1_CONF_REG_BASEADDRESS + reg) as *mut u32;
+    unsafe {
+        sdio_reg.write_volatile(val);
+    }
+}
+
+#[inline(always)]
+pub unsafe fn sdio_reg_write_u8(sd_card_id : SDCardId, reg: u32, val: u8) -> () {
+    let sdio_reg : *mut u8 = (SD0_CONF_REG_BASEADDRESS + ( (sd_card_id as u32) << 16 ) + reg) as *mut u8;
+    unsafe {
+        sdio_reg.write_volatile(val);
+    }
+}
+
+#[inline(always)]
+pub unsafe fn sdio0_reg_write_u8(reg: u32, val: u8) -> () {
+    let sdio_reg : *mut u8 = (SD0_CONF_REG_BASEADDRESS + reg) as *mut u8;
+    unsafe {
+        sdio_reg.write_volatile(val);
+    }
+}
+
+#[inline(always)]
+pub unsafe fn sdio1_reg_write_u8(reg: u32, val: u8) -> () {
+    let sdio_reg : *mut u8 = (SD1_CONF_REG_BASEADDRESS + reg) as *mut u8;
     unsafe {
         sdio_reg.write_volatile(val);
     }
@@ -88,10 +138,94 @@ pub unsafe fn sdio_reg_read_u16(sd_card_id : SDCardId, reg: u32) -> u16 {
 }
 
 #[inline(always)]
+pub unsafe fn sdio0_reg_read_u16(reg: u32) -> u16 {
+    let sdio_reg : *mut u16 = (SD0_CONF_REG_BASEADDRESS + reg) as *mut u16;
+    unsafe {
+        return sdio_reg.read_volatile();
+    }
+}
+
+#[inline(always)]
+pub unsafe fn sdio1_reg_read_u16(reg: u32) -> u16 {
+    let sdio_reg : *mut u16 = (SD1_CONF_REG_BASEADDRESS + reg) as *mut u16;
+    unsafe {
+        return sdio_reg.read_volatile();
+    }
+}
+
+#[inline(always)]
+pub unsafe fn sdio_reg_read_u8(sd_card_id : SDCardId, reg: u32) -> u8 {
+    let sdio_reg : *mut u8 = (SD0_CONF_REG_BASEADDRESS + ( (sd_card_id as u32) << 16 ) + reg) as *mut u8;
+    unsafe {
+        return sdio_reg.read_volatile();
+    }
+}
+
+#[inline(always)]
+pub unsafe fn sdio0_reg_read_u8(reg: u32) -> u8 {
+    let sdio_reg : *mut u8 = (SD0_CONF_REG_BASEADDRESS + reg) as *mut u8;
+    unsafe {
+        return sdio_reg.read_volatile();
+    }
+}
+
+#[inline(always)]
+pub unsafe fn sdio1_reg_read_u8(reg: u32) -> u8 {
+    let sdio_reg : *mut u8 = (SD1_CONF_REG_BASEADDRESS + reg) as *mut u8;
+    unsafe {
+        return sdio_reg.read_volatile();
+    }
+}
+
+#[inline(always)]
 pub fn sdio_get_cntrlr_vers(sd_card_id : SDCardId) -> u16 {
     let cntrl_vers: u16;
     unsafe{
-       cntrl_vers = sdio_reg_read_u16(SDIO_REG_HOSTCONTROLLERVER_REG_OFFSET);
+       cntrl_vers = sdio_reg_read_u16(sd_card_id, SDIO_REG_HOSTCONTROLLERVER_REG_OFFSET);
     }
     return cntrl_vers;
 }
+
+#[inline(always)]
+pub fn sdio0_get_cntrlr_vers() -> u16 {
+    let cntrl_vers: u16;
+    unsafe{
+       cntrl_vers = sdio0_reg_read_u16(SDIO_REG_HOSTCONTROLLERVER_REG_OFFSET);
+    }
+    return cntrl_vers;
+}
+
+#[inline(always)]
+pub fn sdio1_get_cntrlr_vers() -> u16 {
+    let cntrl_vers: u16;
+    unsafe{
+       cntrl_vers = sdio1_reg_read_u16(SDIO_REG_HOSTCONTROLLERVER_REG_OFFSET);
+    }
+    return cntrl_vers;
+}
+
+#[inline(always)]
+pub fn sdio_software_reset_all(sd_card_id : SDCardId) {
+    unsafe{
+       sdio_reg_write_u8(sd_card_id, SDIO_REG_SOFTWARERESET_REG_OFFSET, SDIO_REG_SOFTWARERESET_SWRESET_FOR_ALL_MASK);
+    }
+}
+
+#[inline(always)]
+pub fn sdio_all_in_reset(sd_card_id : SDCardId) -> bool {
+    let ret_val : u8;
+    unsafe{
+       ret_val = sdio_reg_read_u8(sd_card_id, SDIO_REG_SOFTWARERESET_REG_OFFSET);
+    }
+    (ret_val & SDIO_REG_SOFTWARERESET_SWRESET_FOR_ALL_MASK) != 0
+}
+
+/* 
+#[inline(always)]
+pub fn sdio_perform_dma_read(sd_card_id : SDCardId, ) {
+    let cntrl_vers: u16;
+    unsafe{
+       cntrl_vers = sdio_reg_read_u16(sd_card_id, SDIO_REG_HOSTCONTROLLERVER_REG_OFFSET);
+    }
+    return cntrl_vers;
+}*/
