@@ -65,6 +65,39 @@ const SDIO_REG_HOSTCONTROLLERVER_REG_OFFSET                : u32 = 0x000000FE;
 
 // Register constants
 
+const SDIO_REG_POWERCONTROL_EMMC_HWRESET_MASK              : u8 = 0x10;
+const SDIO_REG_POWERCONTROL_EMMC_HWRESET_OFF               : u8 = 4;
+const SDIO_REG_POWERCONTROL_PWCTRL_SDBUSVOLTAGE_MASK       : u8 = 0xE;
+const SDIO_REG_POWERCONTROL_PWCTRL_SDBUSVOLTAGE_OFF        : u8 = 1;
+const SDIO_REG_POWERCONTROL_PWCTRL_SDBUSPOWER_MASK         : u8 = 0x1;
+const SDIO_REG_POWERCONTROL_PWCTRL_SDBUSPOWER_OFF          : u8 = 0;
+
+const POWERCONTROL_VOLTAGE_1V8                             : u8 = 6;
+const POWERCONTROL_VOLTAGE_3V0                             : u8 = 7;
+const POWERCONTROL_VOLTAGE_3V3                             : u8 = 8;
+
+const POWERCONTROL_POWER_OFF                               : u8 = 0;
+const POWERCONTROL_POWER_ON                                : u8 = 1;
+
+const SDIO_REG_CLOCKCONTROL_CLKCTRL_SDCLKFREQSEL_MASK      : u16 = 0xFF00;
+const SDIO_REG_CLOCKCONTROL_CLKCTRL_SDCLKFREQSEL_OFF       : u16 = 8;
+const SDIO_REG_CLOCKCONTROL_CLKCTRL_SDCLKFREQSEL_UPPERBITS_MASK  : u16 = 0x00C0;
+const SDIO_REG_CLOCKCONTROL_CLKCTRL_SDCLKFREQSEL_UPPERBITS_OFF   : u16 = 6;
+const SDIO_REG_CLOCKCONTROL_CLKCTRL_CLKGENSEL_MASK         : u16 = 0x0020;
+const SDIO_REG_CLOCKCONTROL_CLKCTRL_CLKGENSEL_OFF          : u16 = 5;
+const SDIO_REG_CLOCKCONTROL_CLKCTRL_SDCLKENA_MASK          : u16 = 0x0004;
+const SDIO_REG_CLOCKCONTROL_CLKCTRL_SDCLKENA_OFF           : u16 = 2;
+const SDIO_REG_CLOCKCONTROL_SDHCCLKGEN_INTCLKSTABLE_DSYNC_MASK   : u16 = 0x0002;
+const SDIO_REG_CLOCKCONTROL_SDHCCLKGEN_INTCLKSTABLE_DSYNC_OFF    : u16 = 1;
+const SDIO_REG_CLOCKCONTROL_CLKCTRL_INTCLKENA_MASK         : u16 = 0x0001;
+const SDIO_REG_CLOCKCONTROL_CLKCTRL_INTCLKENA_OFF          : u16 = 0;
+
+const CLOCKCONTROL_SD_CLK_DISABLE                          : u16 = 0;
+const CLOCKCONTROL_SD_CLK_ENABLE                           : u16 = 1;
+
+const CLOCKCONTROL_HC_CLK_DISABLE                          : u16 = 0;
+const CLOCKCONTROL_HC_CLK_ENABLE                           : u16 = 1;
+
 const SDIO_REG_SOFTWARERESET_SWRESET_FOR_DAT_MASK          : u8 = 0x4;
 const SDIO_REG_SOFTWARERESET_SWRESET_FOR_DAT_OFF           : u8 = 2;
 const SDIO_REG_SOFTWARERESET_SWRESET_FOR_CMD_MASK          : u8 = 0x2;
@@ -106,6 +139,30 @@ pub unsafe fn sdio1_reg_write_u32(reg: u32, val: u32) -> () {
 }
 
 #[inline(always)]
+pub unsafe fn sdio_reg_write_u16(sd_card_id : SDCardId, reg: u32, val: u16) -> () {
+    let sdio_reg : *mut u16 = (SD0_CONF_REG_BASEADDRESS + ( (sd_card_id as u32) << 16 ) + reg) as *mut u16;
+    unsafe {
+        sdio_reg.write_volatile(val);
+    }
+}
+
+#[inline(always)]
+pub unsafe fn sdio0_reg_write_u16(reg: u32, val: u16) -> () {
+    let sdio_reg : *mut u16 = (SD0_CONF_REG_BASEADDRESS + reg) as *mut u16;
+    unsafe {
+        sdio_reg.write_volatile(val);
+    }
+}
+
+#[inline(always)]
+pub unsafe fn sdio1_reg_write_u16(reg: u32, val: u16) -> () {
+    let sdio_reg : *mut u16 = (SD1_CONF_REG_BASEADDRESS + reg) as *mut u16;
+    unsafe {
+        sdio_reg.write_volatile(val);
+    }
+}
+
+#[inline(always)]
 pub unsafe fn sdio_reg_write_u8(sd_card_id : SDCardId, reg: u32, val: u8) -> () {
     let sdio_reg : *mut u8 = (SD0_CONF_REG_BASEADDRESS + ( (sd_card_id as u32) << 16 ) + reg) as *mut u8;
     unsafe {
@@ -126,6 +183,30 @@ pub unsafe fn sdio1_reg_write_u8(reg: u32, val: u8) -> () {
     let sdio_reg : *mut u8 = (SD1_CONF_REG_BASEADDRESS + reg) as *mut u8;
     unsafe {
         sdio_reg.write_volatile(val);
+    }
+}
+
+#[inline(always)]
+pub unsafe fn sdio_reg_read_u64(sd_card_id : SDCardId, reg: u32) -> u64 {
+    let sdio_reg : *mut u64 = (SD0_CONF_REG_BASEADDRESS + ( (sd_card_id as u32) << 16 ) + reg) as *mut u64;
+    unsafe {
+        return sdio_reg.read_volatile();
+    }
+}
+
+#[inline(always)]
+pub unsafe fn sdio0_reg_read_u64(reg: u32) -> u64 {
+    let sdio_reg : *mut u64 = (SD0_CONF_REG_BASEADDRESS + reg) as *mut u64;
+    unsafe {
+        return sdio_reg.read_volatile();
+    }
+}
+
+#[inline(always)]
+pub unsafe fn sdio1_reg_read_u64(reg: u32) -> u64 {
+    let sdio_reg : *mut u64 = (SD1_CONF_REG_BASEADDRESS + reg) as *mut u64;
+    unsafe {
+        return sdio_reg.read_volatile();
     }
 }
 
@@ -218,6 +299,53 @@ pub fn sdio_all_in_reset(sd_card_id : SDCardId) -> bool {
        ret_val = sdio_reg_read_u8(sd_card_id, SDIO_REG_SOFTWARERESET_REG_OFFSET);
     }
     (ret_val & SDIO_REG_SOFTWARERESET_SWRESET_FOR_ALL_MASK) != 0
+}
+
+#[inline(always)]
+pub fn sdio_read_capabilities(sd_card_id : SDCardId) -> u64 {
+    unsafe{
+       sdio_reg_read_u64(sd_card_id, SDIO_REG_CAPABILITIES_REG_OFFSET)
+    }
+}
+
+#[inline(always)]
+pub fn sdio_set_power_cntrl_default(sd_card_id : SDCardId) {
+    const DEFAULT_PWR_SETTINGS : u8 = (POWERCONTROL_VOLTAGE_3V3 << SDIO_REG_POWERCONTROL_PWCTRL_SDBUSVOLTAGE_OFF) | POWERCONTROL_POWER_ON;
+    unsafe{
+       sdio_reg_write_u8(sd_card_id, SDIO_REG_POWERCONTROL_REG_OFFSET, DEFAULT_PWR_SETTINGS);
+    }
+}
+
+
+pub fn sdio_set_clk_cntrl_default(sd_card_id : SDCardId) {
+    // disable all clocks (other values can be set to 0 as well since they all depend on the clocks being enabled, so they do nothing when clocks disabled)
+    unsafe{
+       sdio_reg_write_u16(sd_card_id, SDIO_REG_CLOCKCONTROL_REG_OFFSET, 0);
+    }
+    // Internal clock needs to be cleared for 1 clock cycle whenever the frequency is changed (meaning write disable then write (enable, new freq))
+    const CLK_DIV : u16 = 0; // TODO: Calculate this for 400 KHz. This is the divisor value that should give 400 KHz = Base clk / CLK_DIV. Where do I get Base clk?
+    const CLK_DEFAULT : u16 = ( CLK_DIV << SDIO_REG_CLOCKCONTROL_CLKCTRL_SDCLKFREQSEL_OFF ) | CLOCKCONTROL_HC_CLK_ENABLE;
+    unsafe{
+        sdio_reg_write_u16(sd_card_id, SDIO_REG_CLOCKCONTROL_REG_OFFSET, CLK_DEFAULT);
+    }
+
+    // Poll the Dsync bit until we are ready
+    let mut clk_cntrl_val : u16;
+    unsafe{
+       clk_cntrl_val = sdio_reg_read_u16(sd_card_id, SDIO_REG_CLOCKCONTROL_REG_OFFSET);
+    }
+    // TODO: Time out?
+    //        Documentation says this is 1 to 2 us. Is this long enough that we should go do something else and comeback?
+    while (clk_cntrl_val & SDIO_REG_CLOCKCONTROL_SDHCCLKGEN_INTCLKSTABLE_DSYNC_MASK) != 0 {
+        unsafe{
+            clk_cntrl_val = sdio_reg_read_u16(sd_card_id, SDIO_REG_CLOCKCONTROL_REG_OFFSET);
+        }
+    }
+
+    let sd_clk_en = clk_cntrl_val | CLOCKCONTROL_SD_CLK_ENABLE;
+    unsafe{
+        sdio_reg_write_u16(sd_card_id, SDIO_REG_CLOCKCONTROL_REG_OFFSET, sd_clk_en);
+    }
 }
 
 /* 
