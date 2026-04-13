@@ -159,6 +159,11 @@ pub const CRL_APB_BOOT_MODE_USER_USE_ALT_OFF         : u32 = 8;
 pub const CRL_APB_BOOT_MODE_USER_BOOT_MODE_MASK      : u32 = 0x0000000F;
 pub const CRL_APB_BOOT_MODE_USER_BOOT_MODE_OFF       : u32 = 0;
 
+
+// This matches the values specified by the Xilinx FSBL
+// This is stupid though... why are SD0 and SD1 not next to each other...
+// I can't change it since the CSU assumes these values (I think?).
+// Moreover, I would havd SD0 and SD1 as 0 and 1 since that makes it easily used as ID's (and since no other boot device is duplicated)
 #[repr(u8)]
 #[derive(PartialEq)]
 pub enum BootMode {
@@ -172,6 +177,8 @@ pub enum BootMode {
     Usb = 7,
     Sd1LS = 14,
     Undefined = 255
+    
+    // TODO: What about ethernet? Can we do a TFTP in the FSBL?
 }
 
 pub const CRL_APB_RESET_REASON_DEBUG_SYS_MASK        : u32 = 0x00000040; // Software Debugger Reset
