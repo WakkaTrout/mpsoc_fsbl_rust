@@ -324,7 +324,8 @@ pub fn sdio_set_clk_cntrl_default(sd_card_id : SDCardId, capabilities : u64) {
     }
     // Internal clock needs to be cleared for 1 clock cycle whenever the frequency is changed (meaning write disable then write (enable, new freq))
     let base_freq : u16 = ((capabilities & 0xFF00) >> 8) as u16; // Base Frequency In MHz
-    let clk_div : u16 = (base_freq * 5) / 4; // Calculation for 400 KHz (Base (MHz) / (2*target) = gives divisor)
+    let clk_div : u16 = (base_freq * 5) / 4; // Calculation for 400 KHz (Base (MHz) / (2*target) = gives divisor).
+    // The spec says that the cards are initialized with a default driver strength with a 400 kHz Frequency. What does this mean exactly? Can we go faster and that is just the speed of the transmitting clock of the card (i.e. tx and rx clocks differe)?
     let clk_default : u16 = ( clk_div << SDIO_REG_CLOCKCONTROL_CLKCTRL_SDCLKFREQSEL_OFF ) | CLOCKCONTROL_HC_CLK_ENABLE;
     unsafe{
         sdio_reg_write_u16(sd_card_id, SDIO_REG_CLOCKCONTROL_REG_OFFSET, clk_default);
