@@ -15,3 +15,5 @@ This project concerns the FSBL software.
 There are other ways to enter this pathway (see mpsoc_reset_types.txt) and many devices to pull software from to procede to later stages of the booting (see mpsoc_boot_devices.txt).
 
 The job of the FSBL is ensure a stable, secure, efficient, and fault tolerant way to move the boot process along. Many systems make use of the MPSoC and the goal of this project is to enhance both the correctness and speed of the FSBL
+
+A secondary goal is to evaluate whether SSBL functionality can be entirely captured in the FSBL (at least just the portion relevant to booting) so that SSBL's can be removed from the system, allowing for falcon booting
