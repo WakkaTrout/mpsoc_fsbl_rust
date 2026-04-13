@@ -317,16 +317,17 @@ pub fn sdio_set_power_cntrl_default(sd_card_id : SDCardId) {
 }
 
 
-pub fn sdio_set_clk_cntrl_default(sd_card_id : SDCardId) {
+pub fn sdio_set_clk_cntrl_default(sd_card_id : SDCardId, capabilities : u64) {
     // disable all clocks (other values can be set to 0 as well since they all depend on the clocks being enabled, so they do nothing when clocks disabled)
     unsafe{
        sdio_reg_write_u16(sd_card_id, SDIO_REG_CLOCKCONTROL_REG_OFFSET, 0);
     }
     // Internal clock needs to be cleared for 1 clock cycle whenever the frequency is changed (meaning write disable then write (enable, new freq))
-    const CLK_DIV : u16 = 0; // TODO: Calculate this for 400 KHz. This is the divisor value that should give 400 KHz = Base clk / CLK_DIV. Where do I get Base clk?
-    const CLK_DEFAULT : u16 = ( CLK_DIV << SDIO_REG_CLOCKCONTROL_CLKCTRL_SDCLKFREQSEL_OFF ) | CLOCKCONTROL_HC_CLK_ENABLE;
+    let base_freq : u16 = ((capabilities & 0xFF00) >> 8) as u16; // Base Frequency In MHz
+    let clk_div : u16 = (base_freq * 5) / 4; // Calculation for 400 KHz (Base (MHz) / (2*target) = gives divisor)
+    let clk_default : u16 = ( clk_div << SDIO_REG_CLOCKCONTROL_CLKCTRL_SDCLKFREQSEL_OFF ) | CLOCKCONTROL_HC_CLK_ENABLE;
     unsafe{
-        sdio_reg_write_u16(sd_card_id, SDIO_REG_CLOCKCONTROL_REG_OFFSET, CLK_DEFAULT);
+        sdio_reg_write_u16(sd_card_id, SDIO_REG_CLOCKCONTROL_REG_OFFSET, clk_default);
     }
 
     // Poll the Dsync bit until we are ready
