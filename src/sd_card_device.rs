@@ -19,13 +19,11 @@ pub fn sd_card_initialize(sd_card_id : SDCardId) {
     // TODO timeout
     // TODO: How long does this take? Should we go do something else while this is resetting and then comeback? Is it even worth it?
     while sdio_all_in_reset(sd_card_id) {}
-
     let dev_capabilities : u64 = sdio_read_capabilities(sd_card_id); // only valid once not in reset (MPSoC Controllers are expected to have capabilities 0x280737EC6481, but unsure if there is a hardware configuration that can change this)
-
     sdio_set_power_cntrl_default(sd_card_id);
     sdio_set_clk_cntrl_default(sd_card_id, dev_capabilities); // This function may take awhile, we might be able to start something else while this finishes
-
-    // Does the above match what is required in the specification? Physical Layer Simplified Specification Version 9.10
+    sdio_set_adma2_default(sd_card_id); // Why can't we use 64-bit ADMA2 mode from the start? Is it only supported once we know the type of SD card inserted?
+    // Does the above match what is required in the specification? Physical Layer Simplified Specification Version 9.10 Section 4.2.1
 
 
 
