@@ -23,7 +23,7 @@ pub fn sd_card_initialize(sd_card_id : SDCardId) {
     let dev_capabilities : u64 = sdio_read_capabilities(sd_card_id); // only valid once not in reset (MPSoC Controllers are expected to have capabilities 0x280737EC6481, but unsure if there is a hardware configuration that can change this)
 
     sdio_set_power_cntrl_default(sd_card_id);
-    sdio_set_clk_cntrl_default(sd_card_id); // This function may take awhile, we might be able to start something else while this finishes
+    sdio_set_clk_cntrl_default(sd_card_id, dev_capabilities); // This function may take awhile, we might be able to start something else while this finishes
 
     // Does the above match what is required in the specification? Physical Layer Simplified Specification Version 9.10
 
