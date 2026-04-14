@@ -47,3 +47,6 @@ TODO: What must the FSBL do to load other partitions?
 Boot Device Requirements:
 1. The FSBL SHALL be able to load the next stage software from the following boot devices: USB, JTAG, QSPI (24 or 32 bit bus), NAND, SD Card, eMMC flash
 TODO: What is required of the FSBL to load next stage software from a boot device?
+
+
+Desgin wants: a low power boot build and a high power one that allows for super fast boot. The high power one would a) dma image data into memory a chunk at a time and b) decompress each chunk once in memory (it is stored encrypted and compressed so it doesn't have to transfer a lot of data). Use every arm core to available and use neon/simd to perform the decompression (can we use the Mali gpu here if present?)
