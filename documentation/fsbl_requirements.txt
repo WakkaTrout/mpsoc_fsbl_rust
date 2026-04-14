@@ -25,6 +25,7 @@ Peripheral Initialization Requirements:
 6. The FSBL SHALL detect and report failures in initializing any peripherals it is configured to initialize
 7. The FSBL SHALL support reseting and setting up the PL if configured (should this include loading the bitstream as well?)
 8. The FSBL SHALL support being able to load a bitstream into the PL (on certain types of boots, which ones?) (is this bitstream packaged in the boot image or can it be from some other file?)
+    8.5 The FSBL SHALL support multiple builds, one build that loads the bitstream into the PL and then disables programming of the PL and another that skips FSBL programming of the PL and allows the runtime OS to program the PL whenever they want to.
 9. The FSBL SHALL support being able to load the PMU FW into the PMU (on certain types of boots, which ones?) (is this bitstream packaged in the boot image or can it be from some other file?)
 
 TODO: What is the list of all peripherals that the FSBL is required to setup?
