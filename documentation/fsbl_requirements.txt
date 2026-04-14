@@ -3,7 +3,8 @@ FSBL Core:
 2. The FSBL MAY support changing to a different boot image if it detects the current boot image is corrupted.
     2.5 Additional Information. The intended way to accomplish this is to program the next boot image address into the multiboot header and then trigger a soft reset
 3. The FSBL SHALL clear the psonly_reset_req bit from the CRL_APB Reset Reason Register if a PS-only reboot occurred (reference https://docs.amd.com/r/en-US/ug1087-zynq-ultrascale-registers/RESET_REASON-CRL_APB-Register) (when should it clear it, only on success?)
-4. The FSBL SHALL load and handoff to either: a SSBL, directly to an OS, or a custom application
+4. The FSBL SHALL load and handoff to either: the ATF, a SSBL, directly to an OS, or a custom application
+    4.5 The FSBL SHOULD have a design goal to fit the initialization features of the ATF into the FSBL, leave the runtime software support of the ATF in memory, and fit the U-boot features inside it as well (so it would go FSBL Init -> Runtime ATF in memory -> OS)
 5. The FSBL SHALL be able to run on any core of the A53 (both dual core and quad core variations) and any core of the R5 of the MPSoC
 6. The FSBL SHALL be able to run on the R5 in lockstep mode or on a single core when not in lockstep mode
 7. The FSBL SHALL be capable of supporting system warm-reboots (what does this mean really?)
