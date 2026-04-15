@@ -258,6 +258,8 @@ pub unsafe fn sdio1_reg_read_u8(reg: u32) -> u8 {
     }
 }
 
+
+
 #[inline(always)]
 pub fn sdio_get_cntrlr_vers(sd_card_id : SDCardId) -> u16 {
     let cntrl_vers: u16;
@@ -352,8 +354,60 @@ pub fn sdio_set_clk_cntrl_default(sd_card_id : SDCardId, capabilities : u64) {
 
 
 pub fn sdio_set_adma2_default(sd_card_id : SDCardId) {
-    const DEFAULT_DMA_SETTINGS : u8 = 0x10; // TODO: Look at this more to see if we can improve this to 64-bit ADMA2 mode. Probably cannot enable 4-bit or highspeed mode as this is controller initialization (and we want to be able to use the DMA to talk to the card to learn its capabilities)
+    const DEFAULT_DMA_SETTINGS : u8 = 0x02; // TODO: Look at this more to see if we can improve this to 64-bit ADMA2 mode. Probably cannot enable 4-bit or highspeed mode as this is controller initialization (and we want to be able to use the DMA to talk to the card to learn its capabilities)
     unsafe{
         sdio_reg_write_u8(sd_card_id, SDIO_REG_HOSTCONTROL1_REG_OFFSET, DEFAULT_DMA_SETTINGS);
+    }
+}
+
+pub fn sdio_set_normal_interrupts_default(sd_card_id : SDCardId) {
+    const DEFAULT_INTR_SETTINGS : u16 = 0xFEFF; 
+    unsafe{
+        sdio_reg_write_u16(sd_card_id, SDIO_REG_NORMALINTRSTSENA_REG_OFFSET, DEFAULT_INTR_SETTINGS);
+    }
+}
+
+pub fn sdio_set_error_interrupts_default(sd_card_id : SDCardId) {
+    const DEFAULT_ERR_INTR_SETTINGS : u16 = 0x03FF; 
+    unsafe{
+        sdio_reg_write_u16(sd_card_id, SDIO_REG_ERRORINTRSTSENA_REG_OFFSET, DEFAULT_ERR_INTR_SETTINGS);
+    }
+}
+
+pub fn sdio_set_normal_interrupts_sgs_default(sd_card_id : SDCardId) {
+    const DEFAULT_INTR_SETTINGS : u16 = 0x0000; 
+    unsafe{
+        sdio_reg_write_u16(sd_card_id, SDIO_REG_NORMALINTRSIGENA_REG_OFFSET, DEFAULT_INTR_SETTINGS);
+    }
+}
+
+pub fn sdio_set_err_interrupts_sgs_default(sd_card_id : SDCardId) {
+    const DEFAULT_INTR_SETTINGS : u16 = 0x0000; 
+    unsafe{
+        sdio_reg_write_u16(sd_card_id, SDIO_REG_ERRORINTRSIGENA_REG_OFFSET, DEFAULT_INTR_SETTINGS);
+    }
+}
+
+pub fn sdio_set_transfer_mode_default(sd_card_id : SDCardId) {
+    const DEFAULT_TRANSFER_SETTINGS : u16 = 0x0013;
+    let curr_settings : u16;
+    unsafe{
+        curr_settings= sdio_reg_read_u16(sd_card_id, SDIO_REG_TRANSFERMODE_REG_OFFSET);
+    }
+    let default_settings = curr_settings | DEFAULT_TRANSFER_SETTINGS;
+    unsafe{
+        sdio_reg_write_u16(sd_card_id, SDIO_REG_TRANSFERMODE_REG_OFFSET, default_settings);
+    }
+}
+
+pub fn sdio_set_blocksize_default(sd_card_id : SDCardId) {
+    const DEFAULT_BLOCKSIZE_SETTINGS : u16 = 0x0200;
+    let curr_settings : u16;
+    unsafe{
+        curr_settings= sdio_reg_read_u16(sd_card_id, SDIO_REG_BLOCKSIZE_REG_OFFSET);
+    }
+    let default_settings = (curr_settings & 0xF000) | DEFAULT_BLOCKSIZE_SETTINGS;
+    unsafe{
+        sdio_reg_write_u16(sd_card_id, SDIO_REG_BLOCKSIZE_REG_OFFSET, default_settings);
     }
 }
