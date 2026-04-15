@@ -23,11 +23,19 @@ pub fn sd_card_initialize(sd_card_id : SDCardId) {
     sdio_set_power_cntrl_default(sd_card_id);
     sdio_set_clk_cntrl_default(sd_card_id, dev_capabilities); // This function may take awhile, we might be able to start something else while this finishes
     sdio_set_adma2_default(sd_card_id); // Why can't we use 64-bit ADMA2 mode from the start? Is it only supported once we know the type of SD card inserted?
+    sdio_set_normal_interrupts_default(sd_card_id);
+    sdio_set_error_interrupts_default(sd_card_id);
+    sdio_set_normal_interrupts_sgs_default(sd_card_id);
+    sdio_set_err_interrupts_sgs_default(sd_card_id);
+    sdio_set_transfer_mode_default(sd_card_id);
+    sdio_set_blocksize_default(sd_card_id);
     // Does the above match what is required in the specification? Physical Layer Simplified Specification Version 9.10 Section 4.2.1
 
 
-
     // Initialize the card (if inserted)
+    // TODO: How do we want to do this? Will an interrupt be generated if we enable it for the insertion (this will play into the wait for insertion below)?
+    //       Do we want to error if a card is not inserted? Or do we want to go into a mode where we wait for the card to be inserted?
+    //       Do we want to go to a secondary boot device if the card is not inserted?
 }
 
 /*
