@@ -394,7 +394,7 @@ pub fn sdio_set_transfer_mode_default(sd_card_id : SDCardId) {
     unsafe{
         curr_settings= sdio_reg_read_u16(sd_card_id, SDIO_REG_TRANSFERMODE_REG_OFFSET);
     }
-    let default_settings = curr_settings | DEFAULT_TRANSFER_SETTINGS;
+    let default_settings = curr_settings | DEFAULT_TRANSFER_SETTINGS; // no need to zero out the other bits, just set the desired bits to all 1's
     unsafe{
         sdio_reg_write_u16(sd_card_id, SDIO_REG_TRANSFERMODE_REG_OFFSET, default_settings);
     }
@@ -406,7 +406,7 @@ pub fn sdio_set_blocksize_default(sd_card_id : SDCardId) {
     unsafe{
         curr_settings= sdio_reg_read_u16(sd_card_id, SDIO_REG_BLOCKSIZE_REG_OFFSET);
     }
-    let default_settings = (curr_settings & 0xF000) | DEFAULT_BLOCKSIZE_SETTINGS;
+    let default_settings = (curr_settings & 0xF000) | DEFAULT_BLOCKSIZE_SETTINGS; // zero out bits 0-11 and then or in the default blocksize
     unsafe{
         sdio_reg_write_u16(sd_card_id, SDIO_REG_BLOCKSIZE_REG_OFFSET, default_settings);
     }
